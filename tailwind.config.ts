@@ -16,4 +16,27 @@ export default {
     },
   },
   plugins: [daisyui],
+  daisyui: {
+    themes: [
+      'nord', // first one is the default theme
+      'dracula',
+      {
+        kcchiefs: {
+          "primary": "#E31837",
+          "secondary": "#FFB81C",
+          "accent": "#000000",
+          "neutral": "#ffeacb",
+          "base-100": "#ffffff",
+        },
+        phieagles: {
+          "primary": "#004C54",
+          "secondary": "#A5ACAF",
+          "accent": "#000000",
+          "neutral": "#565A5C",
+          "base-100": "#ffffff",
+        },
+      }
+    ]
+  },
+  darkMode: ['selector', '[data-theme="dracula"]']
 } satisfies Config;
