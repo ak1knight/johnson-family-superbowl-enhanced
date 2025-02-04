@@ -3,9 +3,7 @@ import { DynamoDBDocument, GetCommand, PutCommand, ScanCommand, UpdateCommand } 
 
 const dynamoDbRegion = "us-west-1";
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
-const getDynamoDBClient = () => {
+const getDynamoDBClient = (): DynamoDBDocument => {
 
     const options:DynamoDBClientConfig = {
         region: dynamoDbRegion,
@@ -22,7 +20,8 @@ const getDynamoDBClient = () => {
 };
 
 const apiCalls = {
-    readEntries: async (year: string) => {
+    readEntries: async (year: number) => {
+        console.log(year);
         const { Items } = await getDynamoDBClient()
             .send(new ScanCommand({
                 TableName: "SuperBowlEntries",

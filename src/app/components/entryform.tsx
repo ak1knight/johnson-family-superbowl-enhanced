@@ -83,7 +83,7 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
                         </div>
                     )}
                 </div> :
-                <input type="text" value={formStore.questionAnswers[i]} className="form-control" onChange={(e) => formStore.questionAnswers[i] = e.target.value} {...q.config}></input>
+                <input type="text" value={formStore.questionAnswers[i]} className="input input-bordered w-full bg-base-200 focus:bg-primary focus:text-primary-content" onChange={(e) => formStore.questionAnswers[i] = e.target.value} {...q.config}></input>
             }
         </Card>)}
         <Card title="Enter Name">
