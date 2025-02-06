@@ -1,3 +1,5 @@
+import React from 'react';
+
 const ThemeDropdown = () => {
 return <div className="dropdown dropdown-end absolute bottom-0 right-0">
         <div tabIndex={0} role="button" className="btn m-1 text-neutral bg-secondary">

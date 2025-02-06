@@ -1,10 +1,10 @@
 import data from '../../../data'
 
-async function get(req, res) {
+async function get(req: Request, { params }: { params: Promise<{ entryId: number }> }) {
     console.log('/api/entry/get HIT!');
-    console.log(req.query);
-    let r = await data.getEntry(req.query.entryId);
-    res.status(200).json(r);
+    console.log((await params).entryId);
+    const r = await data.getEntry((await params).entryId);
+    return Response.json(r);
 };
 
 export default get;

@@ -2,10 +2,11 @@ import React, { useContext } from "react"
 import Card from "./card"
 import { periodNames, teams, tiebreakers } from "../../data/formdata"
 import { FormContext } from "@/data/form-context"
+import { observer } from "mobx-react"
 
 const extrainfo = ''
 
-const Scores = React.forwardRef<HTMLDivElement>(function Scores() {
+const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
     const formStore = useContext(FormContext);
     return <Card id={"score"} title="Score" extrainfo={extrainfo}>
         <div className="flex gap-4" >
@@ -23,7 +24,7 @@ const Scores = React.forwardRef<HTMLDivElement>(function Scores() {
             </div>
             {periodNames.map((q, j) => (
                 <div key={j} className="w-1/4">
-                    <input type="number" value={formStore.team1Scores[j]} className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content" onChange={(e) => formStore.team1Scores[j] = parseInt(e.target.value)} ></input>
+                    <input type="number" value={formStore.team1Scores[j] || ''} className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content" onChange={(e) => formStore.team1Scores[j] = parseInt(e.target.value)} ></input>
                 </div>
             ))}
         </div>
@@ -33,7 +34,7 @@ const Scores = React.forwardRef<HTMLDivElement>(function Scores() {
             </div>
             {periodNames.map((q, j) => (
                 <div key={j} className="w-1/4">
-                    <input type="number" value={formStore.team2Scores[j]} className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content" onChange={(e) => formStore.team2Scores[j] = parseInt(e.target.value)} ></input>
+                    <input type="number" value={formStore.team2Scores[j] || ''} className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content" onChange={(e) => formStore.team2Scores[j] = parseInt(e.target.value)} ></input>
                 </div>
             ))}
         </div>
@@ -43,12 +44,14 @@ const Scores = React.forwardRef<HTMLDivElement>(function Scores() {
             </div>
             {periodNames.map((q, j) => (
                 <div key={j} className="w-1/4">
-                    <input type="number" value={formStore.tiebreakers[j]} className="input input-bordered input-sm w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content" onChange={(e) => formStore.tiebreakers[j] = parseInt(e.target.value)} ></input>
-                    <small className="form-text text-base-300 text-xs">{tiebreakers[formStore.year][q]}</small>
+                    {j !== 3 && <>
+                        <input type="number" value={formStore.tiebreakers[j]} className="input input-bordered input-sm w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content" onChange={(e) => formStore.tiebreakers[j] = parseInt(e.target.value)} ></input>
+                        <small className="form-text text-base-300 text-xs">{tiebreakers[formStore.year][q]}</small>
+                    </>}
                 </div>
             ))}
         </div>
     </Card>
-})
+}))
 
 export default Scores

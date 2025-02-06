@@ -1,9 +1,9 @@
 import data from '../../../data'
 
-async function get(req, res) {
+async function get() {
     console.log('/api/entry HIT!');
-    let r = await data.readEntries(2020);
-    res.status(200).json(r);
+    const r = await data.readEntries(2020);
+    return Response.json(r);
 };
 
 export default get;

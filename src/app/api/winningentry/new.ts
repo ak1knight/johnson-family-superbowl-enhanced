@@ -1,10 +1,10 @@
 import data from "../../../data";
 
-async function createWinningEntry(req, res) {
+async function createWinningEntry(req: Request) {
     console.log("/api/winningentry/new HIT!");
-    const entry = JSON.parse(req.body).entry;
+    const entry = (await req.json()).entry;
     await data.createWinningEntry(entry, 2022);
-    res.status(200).end("OK");
+    return Response.json("OK");
 };
 
 export default createWinningEntry;

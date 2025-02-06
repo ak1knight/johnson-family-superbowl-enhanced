@@ -1,3 +1,4 @@
+/* eslint-disable no-sparse-arrays */
 import { makeAutoObservable } from "mobx"
 import { createContext } from "react"
 import { Entry, TeamName, teams, TeamScore } from "./formdata";
@@ -18,9 +19,10 @@ export class FormStore {
     }
 
     get readyToSubmit() {
+        console.log(this)
         return !this.team1Scores.some(s => s === undefined) &&
             !this.team2Scores.some(s => s === undefined) &&
-            !this.tiebreakers.some(s => s === undefined) &&
+            !this.tiebreakers.some((s, i) => i !== 3 && s === undefined) &&
             !!this.name
     }
 
@@ -69,7 +71,7 @@ export class FormStore {
                 tiebreaker: this.tiebreakers[3] || 0
             },
             name: this.name,
-            ...this.questionAnswers
+            ...this.questionAnswers.map(a => ({response: a}))
         }
     }
 }

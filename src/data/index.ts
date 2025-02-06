@@ -63,7 +63,7 @@ const apiCalls = {
             TableName: "SuperBowlEntries",
             Item: {
                 id: Date.now(),
-                yearKey: 2024,
+                yearKey: 2025,
                 entry
             }
         }));

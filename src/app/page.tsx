@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import EntryForm from "./components/entryform"
 import { questions } from "../data/formdata";
 import { FormContext, FormStore } from '@/data/form-context';
@@ -11,15 +11,6 @@ import ThemeDropdown from './components/themedropdown';
 const Home = () => {
     const [year, ] = useState(2025);
 
-    // const titleQs = [{question: "Score", short: "Score"}, {question: "Yards", short: "Yards"}, ...questions[year]]
-
-    const items = [{question: "Score"}, {question: "Yards"}, ...questions[year]].map(q => `${q.question.toLowerCase().replace(/( |\W)/g, '')}`)
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const sectionRefs = items.map(() => useRef<HTMLDivElement>(null))
-
-    console.log(sectionRefs)
-
     return <div className='container m-auto'>
         <div className="bg-primary text-base-100 h-72 relative rounded-b-lg mb-2">
             <div className="container m-auto h-full flex items-center p-8">
@@ -28,7 +19,7 @@ const Home = () => {
             </div>
         </div>
         <FormContext.Provider value={new FormStore(year.toString())}>
-            <EntryForm year={year} questions={questions[year]} sectionRefs={sectionRefs} />
+            <EntryForm year={year} questions={questions[year]} />
         </FormContext.Provider>
 
         <div className="container mt-3">

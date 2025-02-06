@@ -1,3 +1,4 @@
+import React from "react";
 import type { Metadata } from "next";
 import { Geist_Mono, Lexend } from "next/font/google";
 import "./globals.css";
@@ -37,7 +38,7 @@ export default function RootLayout({
       </Head>
         
       <body
-        className={`${lexendSans.variable} ${geistMono.variable} antialiased pb-2`}
+        className={`${lexendSans.variable} ${geistMono.variable} antialiased pb-2 min-h-screen`}
       >
         <Nav />
         {children}

@@ -1,9 +1,9 @@
 import data from '../../../data'
 
-async function getCurrentWinningEntry(req, res) {
+async function getCurrentWinningEntry() {
     console.log('/api/winningentry HIT!');
-    let r = await data.getWinningEntry(2023);
-    res.status(200).json(r);
+    const r = await data.getWinningEntry(2023);
+    return Response.json(r);
 };
 
 export default getCurrentWinningEntry;

@@ -52,7 +52,8 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         console.log(!isAdmin );
-        if (!isAdmin && (formStore.readyToSubmit)) {
+        console.log(formStore.readyToSubmit)
+        if (!isAdmin && !formStore.readyToSubmit) {
             alert('Please respond to all questions before submitting');
             return
         }
@@ -71,7 +72,7 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
         <Scores />
         <Yards />
         {questions.map((q, i) => <Card key={i} id={`${q.question.toLowerCase().replace(/( |\W)/g, '')}`} title={q.question} extrainfo={q.extrainfo} >
-            { !!q.options ? 
+            { q.options ? 
                 <div className="flex flex-wrap justify-center w-full gap-2 my-2">
                     {q.options.map((option, index) => 
                         <div className="w-[49%]" key={index} >
