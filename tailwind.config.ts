@@ -18,7 +18,19 @@ export default {
   plugins: [daisyui],
   daisyui: {
     themes: [
-      'nord', // first one is the default theme
+      {
+        mytheme: {
+          "primary": "#65956D",
+          "secondary": "#47546B",
+          "accent": "#CF9A95",
+          "neutral": "#F0EACC",
+          "base-100":  "#ffffff",
+          "info": "#77A399",
+          "success": "#B2CFA5",
+          "warning": "#FFD0B0",
+          "error": "#E0A096",
+        }
+      }, // first one is the default theme
       'dracula',
       {
         kcchiefs: {
