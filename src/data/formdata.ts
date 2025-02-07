@@ -415,7 +415,7 @@ export const questions: Record<string, Question[]> = {
     ],
     "2025": [
         {
-            question: "How long will it take Chris Stapleton to sing the National Anthem?",
+            question: "How long will it take Jon Batiste to sing the National Anthem?",
             short: "National Anthem",
             extrainfo: `Neil Diamond holds the record for the quickest rendition of the national anthem in Super Bowl history. He raced through The Star-Spangled Banner 
                 in just 1 minute and 2 seconds at Super Bowl 21. By contrast, it took Alicia Keys 2 minutes and 36 seconds at Super Bowl 47. The average time now stands 
@@ -441,31 +441,32 @@ export const questions: Record<string, Question[]> = {
             options: [{ name: "Philadelphia", score: 100, image: "/images/phi.svg" }, { name: "Kansas City", score: 100, image: "/images/kc.svg" }]
         },
         {
-            question: "Which company's commercial will play first?",
+            question: "Which DC or Marvel movie trailer will appear first during the game broadcast?",
             short: 'Commercial',
-            options: [{ name: "Meta (Facebook)", score: 90, image: 'images/meta.svg' }, { name: "Amazon Prime", score: 110, image: 'images/amazon_prime.svg' }, { name: "Google", score: 110, image: 'images/google.svg' }]
+            options: [{ name: "Superman", score: 100}, { name: "Captain America: Brave New World", score: 100}, { name: "Thunderbolts", score: 100}, { name: "The Fantastic Four: First Steps", score: 100}]
         },
         {
-            question: "What will be the number of the player who scores the first touchdown?",
-            short: 'TD Number',
-            options: [{ name: "11 or lower", score: 100 }, { name: "12 or higher", score: 100 }]
+            question: "Will Saquon Barkley reach 30 yards rushing by the end of the first quarter?",
+            short: 'Saquon',
+            options: [{ name: "Yes", score: 100 }, { name: "No", score: 100 }],
+            extrainfo: "Barkley needs 30 rushing yards to break the record for total rushing yards in a regular season+postseason. His rushing yards prop for the Super Bowl is 111.5 (BetMGM)"
         },
         {
-            question: "Which artist will make a guest appearance with Rihanna during the halftime show?",
+            question: "Who will be the first to make a guest appearance with Kendrick Lamar during the halftime show?",
             short: 'HT Guest Artist',
             extrainfo: "If multiple artists appear, points will be given the first artist that appears (besides other)",
             options: [
-                { name: "Jay-Z", score: 100 },
-                { name: "Calvin Harris", score: 100 },
-                { name: "Drake", score: 100 },
-                { name: "A$AP Rocky", score: 150 },
-                { name: "None/Other", score: 200 }
+                { name: "Future", score: 100 },
+                { name: "Metro Boomin'", score: 100 },
+                { name: "Lil' Wayne", score: 100 },
+                { name: "Baby Keem", score: 100 },
+                { name: "None/Other", score: 100 }
             ]
         },
         {
-            question: "What color will Rihanna be wearing for her last song?",
-            short: 'HT Color',
-            options: [{ name: "Black", score: 100 }, { name: "White", score: 150 }, { name: "Grey/Silver", score: 150 }, { name: "Other", score: 150 }]
+            question: "Will SZA wear a jersey of any kind during the halftime performance?",
+            short: 'HT Jersey',
+            options: [{ name: "Yes", score: 100 }, { name: "No", score: 75 }]
         },
         {
             question: "Will there be a fourth quarter comeback?",
@@ -478,10 +479,11 @@ export const questions: Record<string, Question[]> = {
             options: [{ name: "Yes", score: 85 }, { name: "No", score: 115 }]
         },
         {
-            question: "Who will win Super Bowl LVII MVP?",
+            question: "Who will win Super Bowl LIX MVP?",
             short: 'MVP',
             options: [
-                { name: "Patrick Mahomes (KC QB)", image: "/images/mahomes2.webp", score: 120},
+                { name: "Patrick Mahomes (KC QB)", image: "/images/mahomes2.webp", score: 90},
+                {name: "Saquon Barkley (PHI RB)", image: "/images/barkley.webp", score: 110 },
                 { name: "Jalen Hurts (PHI QB)", image: "/images/hurts.webp", score: 125 },
                 { name: "Other", score: 200 }
             ]
