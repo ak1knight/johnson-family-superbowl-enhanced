@@ -1,9 +1,18 @@
 import data from '../../../../data'
 
 async function GET(req: Request, { params }: { params: Promise<{ year: string }> }) {
-    console.log('/api/winningentry HIT!');
-    const r = await data.getWinningEntry(parseInt((await params).year));
-    return Response.json(r);
+    try {
+        console.log('/api/winningentry HIT!');
+        const year = parseInt((await params).year);
+        if (isNaN(year)) {
+            return Response.json({ error: "Invalid year parameter" }, { status: 400 });
+        }
+        const r = await data.getWinningEntry(year);
+        return Response.json(r);
+    } catch (error) {
+        console.error("Error getting winning entry:", error);
+        return Response.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+    }
 };
 
 export {

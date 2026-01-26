@@ -71,7 +71,7 @@ const apiCalls = {
     createWinningEntry: async (entry: Record<string, unknown>, year: number) => {
         const client = getDynamoDBClient();
 
-        await client.update({
+        await client.send(new UpdateCommand({
             TableName: "WinningEntry",
             Key: {
                 id: String(year - 2019)
@@ -80,17 +80,17 @@ const apiCalls = {
             ExpressionAttributeValues: {
                 ":e": entry
             }
-        });
+        }));
     },
     getWinningEntry: async (year: number) => {
         console.log(year);
         const { Item } = await getDynamoDBClient()
-            .get({
+            .send(new GetCommand({
                 TableName: "WinningEntry",
                 Key: {
                     id: String(year - 2019)
                 }
-            });
+            }));
 
         return Item;
     }

@@ -5,11 +5,11 @@ import { Entry, TeamName, teams, TeamScore } from "./formdata";
 
 export class FormStore {
     year: string;
-    team1Scores: [number | undefined, number | undefined, number | undefined, number | undefined] = [,,,,];
-    team2Scores: [number | undefined, number | undefined, number | undefined, number | undefined] = [,,,,];
+    team1Scores: [number | undefined, number | undefined, number | undefined, number | undefined] = Array(4).fill(undefined) as [number | undefined, number | undefined, number | undefined, number | undefined];
+    team2Scores: [number | undefined, number | undefined, number | undefined, number | undefined] = Array(4).fill(undefined) as [number | undefined, number | undefined, number | undefined, number | undefined];
     team1Yards: number = 0;
     team2Yards: number = 0;
-    tiebreakers: [number | undefined, number | undefined, number | undefined, number | undefined] = [,,,,];
+    tiebreakers: [number | undefined, number | undefined, number | undefined, number | undefined] = Array(4).fill(undefined) as [number | undefined, number | undefined, number | undefined, number | undefined];
     questionAnswers: string[] = [];
     name: string = ''
 
