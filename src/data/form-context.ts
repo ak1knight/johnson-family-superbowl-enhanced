@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx"
 import { createContext } from "react"
-import { Entry, TeamName, teams, TeamScore, PeriodName } from "./formdata";
+import { Entry, TeamName, TeamScore, PeriodName, getHomeTeam, getAwayTeam, isValidYear } from "./formdata";
 
 // Constants for better type safety
 export const QUARTERS = {
@@ -40,17 +40,40 @@ export class FormStore {
         makeAutoObservable(this)
     }
 
-    // Helper methods for better data access
+    // Helper methods for better data access with error handling
     get homeTeam() {
-        return teams[this.year][TEAM_INDEX.HOME];
+        try {
+            return getHomeTeam(this.year);
+        } catch (error) {
+            console.error('Error getting home team:', error);
+            throw new Error(`Failed to get home team for year ${this.year}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
     }
 
     get awayTeam() {
-        return teams[this.year][TEAM_INDEX.AWAY];
+        try {
+            return getAwayTeam(this.year);
+        } catch (error) {
+            console.error('Error getting away team:', error);
+            throw new Error(`Failed to get away team for year ${this.year}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
     }
 
     getTeam(index: 0 | 1) {
-        return teams[this.year][index];
+        try {
+            return index === TEAM_INDEX.HOME ? this.homeTeam : this.awayTeam;
+        } catch (error) {
+            console.error(`Error getting team at index ${index}:`, error);
+            throw new Error(`Failed to get team at index ${index} for year ${this.year}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+
+    // Validate year when setting
+    setYear(year: string) {
+        if (!isValidYear(year)) {
+            throw new Error(`Invalid year: ${year}. Use a year with available team data.`);
+        }
+        this.year = year;
     }
 
     // Centralized validation methods

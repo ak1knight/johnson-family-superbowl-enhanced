@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import Card from "./card"
-import { periodNames, tiebreakers } from "../../data/formdata"
+import { periodNames, getTiebreakerForQuarter, PeriodName } from "../../data/formdata"
 import { FormContext, QUARTERS, TEAM_INDEX } from "@/data/form-context"
 import { observer } from "mobx-react"
 
@@ -79,7 +79,16 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                                 formStore.setTiebreaker(j, value);
                             }}
                         />
-                        <small className="form-text text-base-300 text-xs">{tiebreakers[formStore.year][q]}</small>
+                        <small className="form-text text-base-300 text-xs">
+                            {(() => {
+                                try {
+                                    return getTiebreakerForQuarter(formStore.year, q as PeriodName);
+                                } catch (error) {
+                                    console.warn(`Failed to get tiebreaker for ${q}:`, error);
+                                    return 'Tiebreaker info unavailable';
+                                }
+                            })()}
+                        </small>
                     </>}
                 </div>
             ))}
