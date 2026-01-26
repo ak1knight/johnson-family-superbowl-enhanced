@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Johnson Family Super Bowl Enhanced
+
+A Next.js web application for managing a family Super Bowl betting pool with historical tracking and real-time scoring.
+
+## Project Overview
+
+The **Johnson Family Super Bowl Enhanced** application allows family members to submit predictions for Super Bowl games and tracks scores across multiple years (2020-2025). Users can place bets on prop questions, predict team scores, and compete for the best overall predictions.
+
+## Key Features
+
+- **Entry Form**: Submit predictions for Super Bowl prop bets, team scores, and tiebreakers
+- **Big Board**: View all entries and scoring results in an organized table format
+- **Prop Bet Board**: Track specific prop bet results and winners
+- **Multi-year Support**: Access historical data from Super Bowls 2020-2025
+- **AWS Integration**: Secure data storage using DynamoDB via SST framework
+- **Responsive Design**: Mobile-friendly interface built with Tailwind CSS and DaisyUI
+
+## Technical Stack
+
+- **Frontend**: Next.js 15 with React 19, TypeScript
+- **State Management**: MobX for reactive form state management
+- **Styling**: Tailwind CSS with DaisyUI component library
+- **Database**: AWS DynamoDB for scalable data storage
+- **Deployment**: SST (Serverless Stack) on AWS infrastructure
+- **Development Tools**: ESLint, TypeScript for code quality and type safety
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+ installed
+- AWS account configured for deployment
+- SST CLI installed globally: `npm install -g sst`
 
+### Local Development
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd johnson-family-superbowl-enhanced
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Start the development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Learn More
+### Deployment
 
-To learn more about Next.js, take a look at the following resources:
+Deploy to AWS using SST:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# Deploy to staging
+sst deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Deploy to production
+sst deploy --stage production
+```
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+├── app/
+│   ├── components/     # Reusable UI components
+│   ├── api/           # API routes for data operations
+│   ├── big_board/     # Big board page and components
+│   └── propbetboard/  # Prop bet board page
+├── data/
+│   ├── formdata.ts    # Question data and types
+│   ├── form-context.ts # MobX store for form state
+│   └── index.ts       # DynamoDB operations
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contributing
+
+1. Check the [`TODO.md`](TODO.md) file for current improvement opportunities
+2. Create a feature branch for your changes
+3. Follow TypeScript best practices and existing code style
+4. Test your changes thoroughly before submitting
+
+## License
+
+Private family project - not for public distribution.
