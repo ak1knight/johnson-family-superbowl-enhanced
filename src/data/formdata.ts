@@ -43,45 +43,47 @@ export const teams:{[year: string]: Year} = {
 } as const; 
 
 export const periodNames = ["Quarter 1", "Quarter 2", "Quarter 3", "Final"] as const;
+export type PeriodName = typeof periodNames[number];
 
+// Improved TeamScore type with better structure
 export type TeamScore = {
-    "Quarter 1": {
+    [K in PeriodName]: {
         score: number;
     };
-    "Quarter 2": {
-        score: number;
-    };
-    "Quarter 3": {
-        score: number;
-    };
-    "Final": {
-        score: number;
-    };
+} & {
     yards: number;
 };
 
+// Type for quarter tiebreaker data
+export type QuarterTiebreaker = {
+    tiebreaker: number;
+};
+
+// More type-safe Entry interface
 export type Entry = {
-    [index: number]: AnsweredQuestion,
-    [TeamName.Chiefs]?: TeamScore,
-    "49ers"?: TeamScore,
-    [TeamName.Buccaneers]?: TeamScore,
-    [TeamName.Bengals]?: TeamScore,
-    [TeamName.Rams]?: TeamScore,
-    [TeamName.Eagles]?: TeamScore,
-    "Quarter 1": {
-        tiebreaker: number
-    },
-    "Quarter 2": {
-        tiebreaker: number
-    },
-    "Quarter 3": {
-        tiebreaker: number
-    },
-    "Final": {
-        tiebreaker: number
-    },
-    name: string
-}
+    // Dynamic team scores based on TeamName enum
+    [K in TeamName]?: TeamScore;
+} & {
+    // Quarter tiebreakers
+    [K in PeriodName]: QuarterTiebreaker;
+} & {
+    // Required fields
+    name: string;
+} & {
+    // Question responses - using index signatures for dynamic questions
+    [index: number]: AnsweredQuestion;
+};
+
+// Helper type for creating entries with better type safety
+export type EntryData = {
+    homeTeam: TeamName;
+    awayTeam: TeamName;
+    homeTeamScore: TeamScore;
+    awayTeamScore: TeamScore;
+    tiebreakers: [number, number, number, number];
+    name: string;
+    questionAnswers: AnsweredQuestion[];
+};
 
 export const tiebreakers: Record<string, Record<string, string>> = {
     "2021": {"Quarter 1": "Chiefs Passing Yards", "Quarter 2": "Buccaneers Rushing Yards", "Quarter 3": "Combined Penalty Yards"},

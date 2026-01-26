@@ -1,7 +1,7 @@
 import React from 'react'
 
 type CardProps = {
-    title?:string,
+    title?: string | React.ReactNode,
     id?:string,
     extrainfo?:string,
     children?:React.ReactNode

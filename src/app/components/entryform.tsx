@@ -1,10 +1,10 @@
-import React, { FormEvent, useContext } from 'react';
+import React, { FormEvent, useContext, useState } from 'react';
 import { useRouter } from "next/navigation";
 import Card from "./card";
 import Scores from './scores';
 import Yards from './yards';
 import { Question } from "../../data/formdata";
-import { FormContext } from '@/data/form-context';
+import { FormContext, ValidationErrors } from '@/data/form-context';
 import Image from 'next/image';
 import { observer } from 'mobx-react';
 
@@ -30,53 +30,93 @@ type EntryFormProps = {
 const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/new"}:EntryFormProps) => {
     const router = useRouter();
     const formStore = useContext(FormContext);
-    //let [name, setName] = useState(!!entry ? entry.name : '');
-    //const [formData, setFormData] = useState(props.entry)
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
-    // React.useEffect(() => {
-    //     console.log("boom");
-    //     let newFormData = {}
-    //     teams[year].forEach(t => {
-    //         newFormData[t.name] = { yards: '' }
-    //         periodNames.forEach(q => {
-    //             newFormData[t.name][q] = { score: '' }
-    //         })
-    //     });
+    // Use centralized validation from FormStore
+    const validateForm = () => {
+        const errors = formStore.getValidationErrors(questions);
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
-    //     setFormData({ ...newFormData, ...props.questions })
-    //   }, [year]);
-    // if (!formData) {
-        
-    // }
+    // Helper function to clear specific validation error
+    const clearValidationError = (errorKey: string) => {
+        if (validationErrors[errorKey]) {
+            const newErrors = {...validationErrors};
+            delete newErrors[errorKey];
+            setValidationErrors(newErrors);
+        }
+    };
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        console.log(!isAdmin );
-        console.log(formStore.readyToSubmit)
-        if (!isAdmin && !formStore.readyToSubmit) {
-            alert('Please respond to all questions before submitting');
-            return
+        setSubmitError(null);
+        
+        if (!isAdmin && !validateForm()) {
+            return;
         }
 
-        await fetch(endpoint, {
-            method: "POST",
-            body: JSON.stringify({ entry: formStore.entry })
-        });
+        if (!isAdmin && !formStore.isValid(questions)) {
+            setSubmitError('Please respond to all questions before submitting');
+            return;
+        }
 
-        router.push("/big_board");
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                body: JSON.stringify({ entry: formStore.entry }),
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to submit entry');
+            }
+
+            router.push("/big_board");
+        } catch (error) {
+            setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    console.log(formStore)
-
     return <form data-spy="scroll" className='flex flex-col gap-2' data-target="#form-sidebar" data-offset="0" onSubmit={handleSubmit}>
+        {submitError && (
+            <div className="alert alert-error mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <span>{submitError}</span>
+            </div>
+        )}
+        
         <Scores />
+        {validationErrors.team1Scores && (
+            <div className="text-error text-sm ml-2">⚠️ {validationErrors.team1Scores}</div>
+        )}
+        {validationErrors.team2Scores && (
+            <div className="text-error text-sm ml-2">⚠️ {validationErrors.team2Scores}</div>
+        )}
+        
         <Yards />
-        {questions.map((q, i) => <Card key={i} id={`${q.question.toLowerCase().replace(/( |\W)/g, '')}`} title={q.question} extrainfo={q.extrainfo} >
-            { q.options ? 
+        {validationErrors.tiebreakers && (
+            <div className="text-error text-sm ml-2">⚠️ {validationErrors.tiebreakers}</div>
+        )}
+        
+        {questions.map((q, i) => <Card key={i} id={`${q.question.toLowerCase().replace(/( |\W)/g, '')}`} title={<span>{q.question} <span className="text-error">*</span></span>} extrainfo={q.extrainfo} >
+            { q.options ?
                 <div className="flex flex-wrap justify-center w-full gap-2 my-2">
-                    {q.options.map((option, index) => 
+                    {q.options.map((option, index) =>
                         <div className="w-[49%]" key={index} >
-                            <button type="button" name={option.name} className={`btn btn-block p-3 ${formStore.questionAnswers[i] == option.name ? "btn-primary border-primary" : "btn-light"} h-24 relative border flex justify-center items-center flex-wrap`} onClick={() => formStore.questionAnswers[i] = option.name}>
+                            <button type="button" name={option.name} className={`btn btn-block p-3 ${formStore.questionAnswers[i] == option.name ? "btn-primary border-primary" : "btn-light"} h-24 relative border flex justify-center items-center flex-wrap ${validationErrors[`question_${i}`] ? 'border-error' : ''}`} onClick={() => {
+                                formStore.setQuestionAnswer(i, option.name);
+                                clearValidationError(`question_${i}`);
+                            }}>
                                 {!!option.image && <div className='h-full w-1/6 relative'><Image alt="option" src={option.image} className="bg-contain" style={{objectFit: 'contain'}} fill /></div>}
                                 {!!option.embed && <div className="w-100 mb-2 mt-1"><div className="embed-responsive embed-responsive-16by9"><iframe className="embed-responsive-item" src={option.embed}></iframe></div></div>}
                                 <div className="text-center text-lg grow">{option.name + ' - ' + option.score}</div>
@@ -84,16 +124,60 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
                         </div>
                     )}
                 </div> :
-                <input type="text" value={formStore.questionAnswers[i]} className="input input-bordered w-full bg-base-200 focus:bg-primary focus:text-primary-content" onChange={(e) => formStore.questionAnswers[i] = e.target.value} {...q.config}></input>
+                <div>
+                    <input
+                        type="text"
+                        value={formStore.questionAnswers[i]}
+                        className={`input input-bordered w-full bg-base-200 focus:bg-primary focus:text-primary-content ${validationErrors[`question_${i}`] ? 'border-error' : ''}`}
+                        placeholder="Enter your answer..."
+                        onChange={(e) => {
+                            formStore.setQuestionAnswer(i, e.target.value);
+                            clearValidationError(`question_${i}`);
+                        }}
+                        {...q.config}
+                    />
+                    {validationErrors[`question_${i}`] && (
+                        <div className="text-error text-sm mt-1">⚠️ {validationErrors[`question_${i}`]}</div>
+                    )}
+                </div>
             }
+            {validationErrors[`question_${i}`] && q.options && (
+                <div className="text-error text-sm mt-2">⚠️ {validationErrors[`question_${i}`]}</div>
+            )}
         </Card>)}
-        <Card title="Enter Name">
+        
+        <Card title={<span>Enter Name <span className="text-error">*</span></span>}>
             <div className="flex justify-content-between gap-2">
                 <div className="grow">
-                    <input type="text" value={formStore.name} className="h-full w-full input input-bordered bg-secondary text-xl text-secondary-content" onChange={(e) => formStore.name = e.target.value} />
+                    <input
+                        type="text"
+                        value={formStore.name}
+                        className={`h-full w-full input input-bordered bg-secondary text-xl text-secondary-content ${validationErrors.name ? 'border-error' : ''}`}
+                        placeholder="Your name..."
+                        onChange={(e) => {
+                            formStore.name = e.target.value;
+                            clearValidationError('name');
+                        }}
+                    />
+                    {validationErrors.name && (
+                        <div className="text-error text-sm mt-1">⚠️ {validationErrors.name}</div>
+                    )}
                 </div>
                 <div className="col-auto">
-                    <input type="submit" className="btn btn-primary btn-lg" value="Submit" />
+                    <button
+                        type="submit"
+                        className={`btn btn-primary btn-lg ${isSubmitting ? 'loading' : ''}`}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <span className="loading loading-spinner loading-sm"></span>
+                                Submitting...
+                            </>
+                        ) : (
+                            'Submit'
+                        )}
+                    </button>
                 </div>
             </div>
         </Card>
