@@ -1,21 +1,64 @@
-import React, { useContext } from "react"
+import React, { useContext, useMemo, useCallback } from "react"
 import Card from "./card"
 import { periodNames, getTiebreakerForQuarter, PeriodName } from "../../data/formdata"
 import { FormContext, QUARTERS, TEAM_INDEX } from "@/data/form-context"
 import { observer } from "mobx-react"
+import { useDebouncedCallback, usePerformanceMonitor, memoizeWithLRU } from "../../utils/performance"
 
 const extrainfo = ''
 
-// Helper function to parse score input with validation
-const parseScore = (value: string): number | undefined => {
+// Memoized helper function to parse score input with validation
+const parseScore = memoizeWithLRU((value: string): number | undefined => {
     const parsed = parseInt(value);
     return isNaN(parsed) ? undefined : Math.max(0, Math.min(999, parsed));
-};
+}, 100);
 
 const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
     const formStore = useContext(FormContext);
-    const homeTeam = formStore.homeTeam;
-    const awayTeam = formStore.awayTeam;
+    
+    // Performance monitoring
+    usePerformanceMonitor('Scores', process.env.NODE_ENV === 'development');
+
+    // Memoize team data to avoid recalculation
+    const { homeTeam, awayTeam } = useMemo(() => ({
+        homeTeam: formStore.homeTeam,
+        awayTeam: formStore.awayTeam
+    }), [formStore.homeTeam, formStore.awayTeam]);
+
+    // Debounced score update functions
+    const debouncedSetTeamScore = useDebouncedCallback((teamIndex: 0 | 1, quarterIndex: number, score: number | undefined) => {
+        formStore.setTeamScore(teamIndex, quarterIndex, score);
+    }, 300, [formStore]);
+
+    const debouncedSetTiebreaker = useDebouncedCallback((quarterIndex: number, value: number | undefined) => {
+        formStore.setTiebreaker(quarterIndex, value);
+    }, 300, [formStore]);
+
+    // Optimized score change handlers
+    const handleScoreChange = useCallback((teamIndex: 0 | 1, quarterIndex: number, value: string) => {
+        const score = parseScore(value);
+        debouncedSetTeamScore(teamIndex, quarterIndex, score);
+    }, [debouncedSetTeamScore]);
+
+    const handleTiebreakerChange = useCallback((quarterIndex: number, value: string) => {
+        const tiebreakerValue = parseScore(value);
+        debouncedSetTiebreaker(quarterIndex, tiebreakerValue);
+    }, [debouncedSetTiebreaker]);
+
+    // Memoized tiebreaker text to avoid repeated API calls
+    const tiebreakerTexts = useMemo(() => {
+        return periodNames.reduce((acc, q, index) => {
+            if (index !== QUARTERS.FINAL) {
+                try {
+                    acc[index] = getTiebreakerForQuarter(formStore.year, q as PeriodName);
+                } catch (error) {
+                    console.warn(`Failed to get tiebreaker for ${q}:`, error);
+                    acc[index] = 'Tiebreaker info unavailable';
+                }
+            }
+            return acc;
+        }, {} as Record<number, string>);
+    }, [formStore.year]);
     
     return <Card id={"score"} title="Score" extrainfo={extrainfo}>
         <div className="flex gap-4" >
@@ -37,10 +80,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                         type="number"
                         value={formStore.team1Scores[j] || ''}
                         className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
-                        onChange={(e) => {
-                            const score = parseScore(e.target.value);
-                            formStore.setTeamScore(TEAM_INDEX.HOME, j, score);
-                        }}
+                        onChange={(e) => handleScoreChange(TEAM_INDEX.HOME, j, e.target.value)}
                     />
                 </div>
             ))}
@@ -55,10 +95,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                         type="number"
                         value={formStore.team2Scores[j] || ''}
                         className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
-                        onChange={(e) => {
-                            const score = parseScore(e.target.value);
-                            formStore.setTeamScore(TEAM_INDEX.AWAY, j, score);
-                        }}
+                        onChange={(e) => handleScoreChange(TEAM_INDEX.AWAY, j, e.target.value)}
                     />
                 </div>
             ))}
@@ -74,20 +111,10 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                             type="number"
                             value={formStore.tiebreakers[j] || ''}
                             className="input input-bordered input-sm w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
-                            onChange={(e) => {
-                                const value = parseScore(e.target.value);
-                                formStore.setTiebreaker(j, value);
-                            }}
+                            onChange={(e) => handleTiebreakerChange(j, e.target.value)}
                         />
                         <small className="form-text text-base-300 text-xs">
-                            {(() => {
-                                try {
-                                    return getTiebreakerForQuarter(formStore.year, q as PeriodName);
-                                } catch (error) {
-                                    console.warn(`Failed to get tiebreaker for ${q}:`, error);
-                                    return 'Tiebreaker info unavailable';
-                                }
-                            })()}
+                            {tiebreakerTexts[j] || 'Tiebreaker info unavailable'}
                         </small>
                     </>}
                 </div>

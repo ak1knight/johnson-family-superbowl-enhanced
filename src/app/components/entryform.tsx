@@ -1,4 +1,4 @@
-import React, { FormEvent, useContext, useState } from 'react';
+import React, { FormEvent, useContext, useState, useMemo } from 'react';
 import { useRouter } from "next/navigation";
 import Card from "./card";
 import Scores from './scores';
@@ -7,6 +7,7 @@ import { Question } from "../../data/formdata";
 import { FormContext, ValidationErrors } from '@/data/form-context';
 import Image from 'next/image';
 import { observer } from 'mobx-react';
+import { useDebouncedCallback, useDebouncedValidation, usePerformanceMonitor } from '../../utils/performance';
 
 
 // let formData = {};
@@ -34,21 +35,59 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
-    // Use centralized validation from FormStore
+    // Performance monitoring
+    usePerformanceMonitor('EntryForm', process.env.NODE_ENV === 'development');
+
+    // Debounced validation to reduce unnecessary validation calls
+    const debouncedValidateForm = useDebouncedCallback(() => {
+        const errors = formStore.getValidationErrors(questions);
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    }, 300, [formStore, questions]);
+
+    // Use centralized validation from FormStore (immediate for form submission)
     const validateForm = () => {
         const errors = formStore.getValidationErrors(questions);
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
     };
 
-    // Helper function to clear specific validation error
-    const clearValidationError = (errorKey: string) => {
+    // Helper function to clear specific validation error with debouncing
+    const clearValidationError = useDebouncedCallback((errorKey: string) => {
         if (validationErrors[errorKey]) {
             const newErrors = {...validationErrors};
             delete newErrors[errorKey];
             setValidationErrors(newErrors);
         }
-    };
+    }, 150, [validationErrors]);
+
+    // Debounced form validation for real-time feedback
+    const nameValidation = useDebouncedValidation(
+        formStore.name,
+        (name) => {
+            if (!name.trim()) return "Name is required";
+            if (name.trim().length < 2) return "Name must be at least 2 characters";
+            return null;
+        },
+        300
+    );
+
+    // Memoized question validation to avoid recalculating on every render
+    const questionValidations = useMemo(() => {
+        return questions.map((q, index) => ({
+            questionIndex: index,
+            validation: useDebouncedValidation(
+                formStore.questionAnswers[index] || '',
+                (answer) => {
+                    if (!answer || answer.trim() === '') {
+                        return `Answer for "${q.question}" is required`;
+                    }
+                    return null;
+                },
+                300
+            )
+        }));
+    }, [questions, formStore.questionAnswers]);
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();

@@ -93,49 +93,52 @@ export const tiebreakers: Record<string, Record<string, string>> = {
     "2025": {"Quarter 1": "Chiefs Passing Yards", "Quarter 2": "Eagles Rushing Yards", "Quarter 3": "Combined Penalty Yards"}
 }
 
-// Helper functions for team data access with error handling
-export const getTeamsForYear = (year: string): Year => {
+// Lazy loading and memoization imports
+import { memoizeWithLRU } from '../utils/performance';
+
+// Memoized helper functions for team data access with error handling
+export const getTeamsForYear = memoizeWithLRU((year: string): Year => {
     const teamData = teams[year];
     if (!teamData) {
         throw new Error(`No team data found for year: ${year}. Available years: ${Object.keys(teams).join(', ')}`);
     }
     return teamData;
-};
+}, 50, (year) => year);
 
-export const getTeamByIndex = (year: string, index: 0 | 1): Team => {
+export const getTeamByIndex = memoizeWithLRU((year: string, index: 0 | 1): Team => {
     try {
         const yearTeams = getTeamsForYear(year);
         return yearTeams[index];
     } catch (error) {
         throw new Error(`Failed to get team at index ${index} for year ${year}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-};
+}, 100, (year, index) => `${year}-${index}`);
 
-export const getHomeTeam = (year: string): Team => {
+export const getHomeTeam = memoizeWithLRU((year: string): Team => {
     return getTeamByIndex(year, 0);
-};
+}, 50, (year) => `home-${year}`);
 
-export const getAwayTeam = (year: string): Team => {
+export const getAwayTeam = memoizeWithLRU((year: string): Team => {
     return getTeamByIndex(year, 1);
-};
+}, 50, (year) => `away-${year}`);
 
-export const getQuestionsForYear = (year: string): Question[] => {
+export const getQuestionsForYear = memoizeWithLRU((year: string): Question[] => {
     const questionData = questions[year];
     if (!questionData) {
         throw new Error(`No questions found for year: ${year}. Available years: ${Object.keys(questions).join(', ')}`);
     }
     return questionData;
-};
+}, 20, (year) => `questions-${year}`);
 
-export const getTiebreakersForYear = (year: string): Record<string, string> => {
+export const getTiebreakersForYear = memoizeWithLRU((year: string): Record<string, string> => {
     const tiebreakerData = tiebreakers[year];
     if (!tiebreakerData) {
         throw new Error(`No tiebreakers found for year: ${year}. Available years: ${Object.keys(tiebreakers).join(', ')}`);
     }
     return tiebreakerData;
-};
+}, 20, (year) => `tiebreakers-${year}`);
 
-export const getTiebreakerForQuarter = (year: string, quarter: PeriodName): string => {
+export const getTiebreakerForQuarter = memoizeWithLRU((year: string, quarter: PeriodName): string => {
     try {
         const yearTiebreakers = getTiebreakersForYear(year);
         const tiebreaker = yearTiebreakers[quarter];
@@ -146,34 +149,61 @@ export const getTiebreakerForQuarter = (year: string, quarter: PeriodName): stri
     } catch (error) {
         throw new Error(`Failed to get tiebreaker for quarter ${quarter} in year ${year}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-};
+}, 100, (year, quarter) => `${year}-${quarter}`);
 
-// Validation helpers
-export const isValidYear = (year: string): boolean => {
+// Memoized validation helpers
+export const isValidYear = memoizeWithLRU((year: string): boolean => {
     return year in teams;
-};
+}, 50, (year) => year);
 
-export const isValidTeamName = (teamName: string): teamName is TeamName => {
+export const isValidTeamName = memoizeWithLRU((teamName: string): teamName is TeamName => {
     return Object.values(TeamName).includes(teamName as TeamName);
-};
+}, 50, (teamName) => teamName);
 
-export const isValidPeriodName = (period: string): period is PeriodName => {
+export const isValidPeriodName = memoizeWithLRU((period: string): period is PeriodName => {
     return periodNames.includes(period as PeriodName);
-};
+}, 20, (period) => period);
 
-// Year utilities
-export const getAvailableYears = (): string[] => {
+// Memoized year utilities for better performance
+export const getAvailableYears = memoizeWithLRU((): string[] => {
     return Object.keys(teams).sort();
-};
+}, 1, () => 'available-years');
 
-export const getCurrentYear = (): string => {
+export const getCurrentYear = memoizeWithLRU((): string => {
     return new Date().getFullYear().toString();
-};
+}, 1, () => `current-year-${Math.floor(Date.now() / (1000 * 60 * 60))}`); // Cache for 1 hour
 
-export const getLatestAvailableYear = (): string => {
+export const getLatestAvailableYear = memoizeWithLRU((): string => {
     const years = getAvailableYears();
     return years[years.length - 1];
-};
+}, 1, () => 'latest-available-year');
+
+// Lazy loading utility for large question sets
+export const getQuestionsLazy = memoizeWithLRU((year: string): Promise<Question[]> => {
+    return new Promise((resolve) => {
+        // Simulate lazy loading - in a real app, this might be an API call
+        setTimeout(() => {
+            resolve(getQuestionsForYear(year));
+        }, 0);
+    });
+}, 20, (year) => `lazy-questions-${year}`);
+
+// Performance optimized question filtering
+export const getQuestionsByType = memoizeWithLRU((year: string, hasOptions: boolean): Question[] => {
+    const allQuestions = getQuestionsForYear(year);
+    return allQuestions.filter(q => hasOptions ? !!q.options : !q.options);
+}, 40, (year, hasOptions) => `${year}-${hasOptions ? 'options' : 'text'}`);
+
+// Batch data loading utility
+export const getBatchData = memoizeWithLRU((year: string) => {
+    return {
+        teams: getTeamsForYear(year),
+        questions: getQuestionsForYear(year),
+        tiebreakers: getTiebreakersForYear(year),
+        homeTeam: getHomeTeam(year),
+        awayTeam: getAwayTeam(year)
+    };
+}, 10, (year) => `batch-${year}`);
 
 export const questions: Record<string, Question[]> = {
     "2020": [

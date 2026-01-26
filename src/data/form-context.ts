@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx"
+import { makeAutoObservable, computed } from "mobx"
 import { createContext } from "react"
 import { Entry, TeamName, TeamScore, PeriodName, getHomeTeam, getAwayTeam, isValidYear } from "./formdata";
 
@@ -35,9 +35,27 @@ export class FormStore {
     questionAnswers: string[] = [];
     name: string = ''
 
+    // Performance tracking (non-observable)
+    private _entryGenerationCount = 0;
+    private _lastEntryGeneration = 0;
+
     constructor(year: string = '2025') {
         this.year = year;
-        makeAutoObservable(this)
+        makeAutoObservable(this, {
+            // Mark expensive computations as computed for automatic caching
+            homeTeam: computed,
+            awayTeam: computed,
+            entry: computed,
+            readyToSubmit: computed,
+        })
+    }
+
+    // Performance monitoring getter
+    get performanceStats() {
+        return {
+            entryGenerationCount: this._entryGenerationCount,
+            lastEntryGeneration: this._lastEntryGeneration,
+        };
     }
 
     // Helper methods for better data access with error handling
@@ -198,19 +216,78 @@ export class FormStore {
     }
 
     get entry(): Entry {
-        const homeTeam = this.homeTeam;
-        const awayTeam = this.awayTeam;
+        const startTime = performance.now();
+        this._entryGenerationCount++;
         
-        return {
-            [homeTeam.name as TeamName]: this.generateTeamScore(TEAM_INDEX.HOME),
-            [awayTeam.name as TeamName]: this.generateTeamScore(TEAM_INDEX.AWAY),
-            "Quarter 1": { tiebreaker: this.tiebreakers[QUARTERS.FIRST] || 0 },
-            "Quarter 2": { tiebreaker: this.tiebreakers[QUARTERS.SECOND] || 0 },
-            "Quarter 3": { tiebreaker: this.tiebreakers[QUARTERS.THIRD] || 0 },
-            "Final": { tiebreaker: this.tiebreakers[QUARTERS.FINAL] || 0 },
-            name: this.name,
-            ...this.questionAnswers.map(a => ({response: a}))
+        try {
+            const homeTeam = this.homeTeam;
+            const awayTeam = this.awayTeam;
+            
+            const entry = {
+                [homeTeam.name as TeamName]: this.generateTeamScore(TEAM_INDEX.HOME),
+                [awayTeam.name as TeamName]: this.generateTeamScore(TEAM_INDEX.AWAY),
+                "Quarter 1": { tiebreaker: this.tiebreakers[QUARTERS.FIRST] || 0 },
+                "Quarter 2": { tiebreaker: this.tiebreakers[QUARTERS.SECOND] || 0 },
+                "Quarter 3": { tiebreaker: this.tiebreakers[QUARTERS.THIRD] || 0 },
+                "Final": { tiebreaker: this.tiebreakers[QUARTERS.FINAL] || 0 },
+                name: this.name,
+                ...this.questionAnswers.map(a => ({response: a}))
+            };
+
+            this._lastEntryGeneration = performance.now() - startTime;
+            return entry;
+        } catch (error) {
+            this._lastEntryGeneration = performance.now() - startTime;
+            console.error('Error generating entry:', error);
+            throw error;
         }
+    }
+
+    // Optimized batch update methods to reduce re-renders
+    updateTeamScores(teamIndex: 0 | 1, scores: Partial<ScoreArray>) {
+        const targetScores = teamIndex === TEAM_INDEX.HOME ? this.team1Scores : this.team2Scores;
+        let hasChanges = false;
+
+        scores.forEach((score, index) => {
+            if (score !== undefined && targetScores[index] !== score) {
+                this.setTeamScore(teamIndex, index, score);
+                hasChanges = true;
+            }
+        });
+
+        return hasChanges;
+    }
+
+    updateTiebreakers(tiebreakers: Partial<ScoreArray>) {
+        let hasChanges = false;
+
+        tiebreakers.forEach((value, index) => {
+            if (value !== undefined && this.tiebreakers[index] !== value) {
+                this.setTiebreaker(index, value);
+                hasChanges = true;
+            }
+        });
+
+        return hasChanges;
+    }
+
+    updateQuestionAnswers(answers: Partial<string[]>) {
+        let hasChanges = false;
+
+        answers.forEach((answer, index) => {
+            if (answer !== undefined && this.questionAnswers[index] !== answer) {
+                this.setQuestionAnswer(index, answer);
+                hasChanges = true;
+            }
+        });
+
+        return hasChanges;
+    }
+
+    // Reset performance stats
+    resetPerformanceStats() {
+        this._entryGenerationCount = 0;
+        this._lastEntryGeneration = 0;
     }
 }
 
