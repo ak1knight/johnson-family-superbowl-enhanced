@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Card from '../components/card';
 import PropBetBoardTable from '../components/propbetboardtable';
-import ThemeDropdown from '../components/themedropdown';
+import NFLThemeDropdown from '../components/NFLThemeDropdown';
 
 
 const PropBetBoard = () => {
@@ -13,7 +13,7 @@ const PropBetBoard = () => {
     <div className="bg-primary text-base-100 h-72 relative rounded-b-lg mb-2">
         <div className="container m-auto h-full flex items-center p-8">
             <h1 className="text-9xl">Prop Bet Big Board</h1>
-            <ThemeDropdown />
+            <NFLThemeDropdown />
         </div>
     </div>
     <div className="container">

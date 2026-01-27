@@ -4,18 +4,18 @@ import React, { useState } from 'react'
 import EntryForm from "./components/entryform"
 import { questions } from "../data/formdata";
 import { FormContext, FormStore } from '@/data/form-context';
-import ThemeDropdown from './components/themedropdown';
+import NFLThemeDropdown from './components/NFLThemeDropdown';
 
 
 
 const Home = () => {
-    const [year, ] = useState(2025);
+    const [year, ] = useState(2026);
 
     return <div className='container m-auto'>
         <div className="bg-primary text-base-100 h-72 relative rounded-b-lg mb-2">
             <div className="container m-auto h-full flex items-center p-8">
                 <h1 className="text-9xl">Entry Form</h1>
-                <ThemeDropdown />
+                <NFLThemeDropdown />
             </div>
         </div>
         <FormContext.Provider value={new FormStore(year.toString())}>

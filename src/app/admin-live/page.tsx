@@ -4,7 +4,7 @@ import React from 'react';
 import LiveWinningEntryForm from "../components/LiveWinningEntryForm"
 import Layout from '../components/layout'
 import { questions } from "../../data/formdata";
-import ThemeDropdown from '../components/themedropdown';
+import NFLThemeDropdown from '../components/NFLThemeDropdown';
 
 const AdminLivePage = () => {
     return (
@@ -15,7 +15,7 @@ const AdminLivePage = () => {
                         <h1 className="lg:text-5xl text-xl">Live Winning Entry Updates</h1>
                         <p className="lead">Enter actual game results as they happen</p>
                     </div>
-                    <ThemeDropdown />
+                    <NFLThemeDropdown />
                 </div>
             </div>
             {/* <div className="jumbotron jumbotron-fluid bg-info text-white">
