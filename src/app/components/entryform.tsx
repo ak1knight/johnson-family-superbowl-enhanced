@@ -38,7 +38,7 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
     // Performance monitoring
     usePerformanceMonitor('EntryForm', process.env.NODE_ENV === 'development');
 
-    // Debounced validation to reduce unnecessary validation calls
+    // Debounced validation to reduce unnecessary validation calls (validation only, not UI updates)
     const debouncedValidateForm = useDebouncedCallback(() => {
         const errors = formStore.getValidationErrors(questions);
         setValidationErrors(errors);
@@ -52,7 +52,7 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
         return Object.keys(errors).length === 0;
     };
 
-    // Helper function to clear specific validation error with debouncing
+    // Helper function to clear specific validation error with debouncing (validation only)
     const clearValidationError = useDebouncedCallback((errorKey: string) => {
         if (validationErrors[errorKey]) {
             const newErrors = {...validationErrors};
@@ -72,22 +72,24 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
         300
     );
 
-    // Memoized question validation to avoid recalculating on every render
-    const questionValidations = useMemo(() => {
-        return questions.map((q, index) => ({
+    // Pre-compute question validations at the top level to avoid hooks rule violations
+    const questionValidations = questions.map((q, index) => {
+        const validation = useDebouncedValidation(
+            formStore.questionAnswers[index] || '',
+            (answer) => {
+                if (!answer || answer.trim() === '') {
+                    return `Answer for "${q.question}" is required`;
+                }
+                return null;
+            },
+            300
+        );
+        
+        return {
             questionIndex: index,
-            validation: useDebouncedValidation(
-                formStore.questionAnswers[index] || '',
-                (answer) => {
-                    if (!answer || answer.trim() === '') {
-                        return `Answer for "${q.question}" is required`;
-                    }
-                    return null;
-                },
-                300
-            )
-        }));
-    }, [questions, formStore.questionAnswers]);
+            validation
+        };
+    });
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();

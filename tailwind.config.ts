@@ -47,6 +47,28 @@ export default {
           "neutral": "#565A5C",
           "base-100": "#ffffff",
         },
+        nepatriots: {
+          "primary": "#002244", // Patriots Navy
+          "secondary": "#C60C30", // Patriots Red
+          "accent": "#B0B7BC", // Patriots Silver
+          "neutral": "#f8f9fa",
+          "base-100": "#ffffff",
+          "info": "#002244",
+          "success": "#28a745",
+          "warning": "#ffc107",
+          "error": "#dc3545",
+        },
+        seaseahawks: {
+          "primary": "#002244", // Seahawks Navy
+          "secondary": "#69BE28", // Seahawks Action Green
+          "accent": "#A5ACAF", // Seahawks Wolf Grey
+          "neutral": "#f1f3f4",
+          "base-100": "#ffffff",
+          "info": "#69BE28",
+          "success": "#69BE28",
+          "warning": "#ff6900",
+          "error": "#dc3545",
+        },
       }
     ]
   },

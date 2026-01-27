@@ -25,25 +25,18 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
         awayTeam: formStore.awayTeam
     }), [formStore.homeTeam, formStore.awayTeam]);
 
-    // Debounced score update functions
-    const debouncedSetTeamScore = useDebouncedCallback((teamIndex: 0 | 1, quarterIndex: number, score: number | undefined) => {
-        formStore.setTeamScore(teamIndex, quarterIndex, score);
-    }, 300, [formStore]);
-
-    const debouncedSetTiebreaker = useDebouncedCallback((quarterIndex: number, value: number | undefined) => {
-        formStore.setTiebreaker(quarterIndex, value);
-    }, 300, [formStore]);
-
-    // Optimized score change handlers
+    // Immediate update handlers for instant UI feedback
     const handleScoreChange = useCallback((teamIndex: 0 | 1, quarterIndex: number, value: string) => {
         const score = parseScore(value);
-        debouncedSetTeamScore(teamIndex, quarterIndex, score);
-    }, [debouncedSetTeamScore]);
+        // Update immediately for instant visual feedback
+        formStore.setTeamScore(teamIndex, quarterIndex, score);
+    }, [formStore]);
 
     const handleTiebreakerChange = useCallback((quarterIndex: number, value: string) => {
         const tiebreakerValue = parseScore(value);
-        debouncedSetTiebreaker(quarterIndex, tiebreakerValue);
-    }, [debouncedSetTiebreaker]);
+        // Update immediately for instant visual feedback
+        formStore.setTiebreaker(quarterIndex, tiebreakerValue);
+    }, [formStore]);
 
     // Memoized tiebreaker text to avoid repeated API calls
     const tiebreakerTexts = useMemo(() => {

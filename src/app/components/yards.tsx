@@ -24,16 +24,12 @@ const Yards = observer(React.forwardRef<HTMLDivElement>(function Yards() {
         awayTeam: formStore.awayTeam
     }), [formStore.homeTeam, formStore.awayTeam]);
 
-    // Debounced yards update function
-    const debouncedSetTeamYards = useDebouncedCallback((teamIndex: 0 | 1, yards: number) => {
-        formStore.setTeamYards(teamIndex, yards);
-    }, 300, [formStore]);
-
-    // Optimized yards change handler
+    // Immediate yards change handler for instant visual feedback
     const handleYardsChange = useCallback((teamIndex: 0 | 1, value: string) => {
         const yards = parseYards(value);
-        debouncedSetTeamYards(teamIndex, yards);
-    }, [debouncedSetTeamYards]);
+        // Update immediately for instant visual feedback
+        formStore.setTeamYards(teamIndex, yards);
+    }, [formStore]);
     
     return <Card id="yards" title="Total Yards" extrainfo={extrainfo}>
         <div className="flex gap-4" >

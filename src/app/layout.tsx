@@ -4,6 +4,7 @@ import { Geist_Mono, Lexend } from "next/font/google";
 import "./globals.css";
 import Head from "next/head";
 import Nav from "./components/nav";
+import { ThemeProvider } from "../contexts/ThemeContext";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -40,8 +41,10 @@ export default function RootLayout({
       <body
         className={`${lexendSans.variable} ${geistMono.variable} antialiased pb-2 min-h-screen`}
       >
-        <Nav />
-        {children}
+        <ThemeProvider>
+          <Nav />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
