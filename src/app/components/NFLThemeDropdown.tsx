@@ -116,18 +116,28 @@ const NFLThemeDropdown = () => {
     };
 
     return (
-        <div className="dropdown dropdown-end absolute bottom-0 right-0">
-            <div 
-                tabIndex={0} 
-                role="button" 
-                className="btn m-1 bg-secondary text-primary"
+        <div className="dropdown dropdown-end">
+            <div
+                tabIndex={0}
+                role="button"
+                className="btn bg-secondary/80 backdrop-blur-sm text-primary border-secondary/50 hover:bg-secondary hover:border-secondary transition-all duration-200"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                {getCurrentThemeName()}
+                <div className="flex items-center gap-2">
+                    {/* Current theme color preview */}
+                    <div
+                        className="w-4 h-4 rounded-full border-2 border-current opacity-80"
+                        style={{
+                            background: `var(--p)`
+                        }}
+                    />
+                    <span className="hidden sm:inline">{getCurrentThemeName()}</span>
+                    <span className="sm:hidden">Theme</span>
+                </div>
                 <svg
                     width="12px"
                     height="12px"
-                    className="inline-block h-2 w-2 fill-current opacity-60"
+                    className={`inline-block h-3 w-3 fill-current transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 2048 2048">
                     <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
@@ -135,20 +145,20 @@ const NFLThemeDropdown = () => {
             </div>
             
             {isOpen && (
-                <div className="dropdown-content bg-base-100 rounded-box z-[1] w-80 max-h-96 overflow-hidden border border-base-300 shadow-2xl text-base-content">
+                <div className="dropdown-content bg-base-100/95 backdrop-blur-md rounded-2xl z-[1] w-80 max-h-96 overflow-hidden border border-base-300/50 shadow-2xl text-base-content animate-fade-in">
                     {/* Search and Filters */}
-                    <div className="p-3 border-b border-base-300">
+                    <div className="p-4 border-b border-base-300/50">
                         <input
                             type="text"
                             placeholder="Search teams..."
-                            className="input input-sm input-bordered w-full mb-2"
+                            className="input input-sm input-bordered w-full mb-3 bg-base-200/50 focus:bg-base-200 transition-colors"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                         
-                        <div className="flex gap-2 mb-2">
-                            <select 
-                                className="select select-sm select-bordered flex-1"
+                        <div className="flex gap-2 mb-3">
+                            <select
+                                className="select select-sm select-bordered flex-1 bg-base-200/50"
                                 value={selectedConference}
                                 onChange={(e) => setSelectedConference(e.target.value as any)}
                             >
@@ -157,8 +167,8 @@ const NFLThemeDropdown = () => {
                                 <option value="NFC">NFC</option>
                             </select>
                             
-                            <select 
-                                className="select select-sm select-bordered flex-1"
+                            <select
+                                className="select select-sm select-bordered flex-1 bg-base-200/50"
                                 value={selectedDivision}
                                 onChange={(e) => setSelectedDivision(e.target.value as any)}
                             >
@@ -170,8 +180,8 @@ const NFLThemeDropdown = () => {
                             </select>
                         </div>
                         
-                        <button 
-                            className="btn btn-xs btn-ghost w-full"
+                        <button
+                            className="btn btn-xs btn-ghost w-full hover:bg-base-200/50"
                             onClick={clearFilters}
                         >
                             Clear Filters
@@ -181,44 +191,84 @@ const NFLThemeDropdown = () => {
                     {/* Scrollable Content */}
                     <div className="overflow-y-auto max-h-64 p-2">
                         {/* Other Themes */}
-                        <div className="mb-3">
-                            <div className="text-xs font-semibold text-base-content/60 mb-1 px-2">GENERAL</div>
+                        <div className="mb-4">
+                            <div className="text-xs font-semibold text-base-content/60 mb-2 px-2">GENERAL</div>
                             {OTHER_THEMES.map((themeOption) => (
-                                <button
+                                <div
                                     key={themeOption.value}
-                                    className={`btn btn-sm btn-ghost w-full justify-start mb-1 ${
-                                        theme === themeOption.value ? 'btn-primary' : ''
-                                    }`}
-                                    onClick={() => handleThemeChange(themeOption.value)}
+                                    className="group relative"
                                 >
-                                    <span className={`w-3 h-3 rounded-full mr-2 ${
-                                        theme === themeOption.value ? 'bg-primary-content' : 'bg-base-300'
-                                    }`}></span>
-                                    {themeOption.name}
-                                </button>
+                                    <button
+                                        className={`btn btn-sm btn-ghost w-full justify-start mb-1 group-hover:bg-base-200/50 transition-all duration-200 ${
+                                            theme === themeOption.value ? 'bg-primary/20 text-primary border-primary/30' : ''
+                                        }`}
+                                        onClick={() => handleThemeChange(themeOption.value)}
+                                    >
+                                        <div className="flex items-center gap-3 w-full">
+                                            {/* Color preview */}
+                                            <div className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
+                                                theme === themeOption.value
+                                                    ? 'border-primary bg-primary'
+                                                    : 'border-base-300 bg-base-300 group-hover:border-primary/50'
+                                            }`}></div>
+                                            <span className="flex-1 text-left">{themeOption.name}</span>
+                                            {theme === themeOption.value && (
+                                                <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                    </button>
+                                </div>
                             ))}
                         </div>
 
                         {/* NFL Teams by Conference and Division */}
                         {Object.entries(groupedTeams).sort().map(([conference, divisions]) => (
-                            <div key={conference} className="mb-3">
-                                <div className="text-xs font-semibold text-base-content/60 mb-1 px-2">{conference}</div>
+                            <div key={conference} className="mb-4">
+                                <div className="text-xs font-semibold text-base-content/60 mb-2 px-2 flex items-center gap-2">
+                                    <span>{conference}</span>
+                                    <div className="flex-1 h-px bg-base-300/50"></div>
+                                </div>
                                 {Object.entries(divisions).sort().map(([division, teams]) => (
-                                    <div key={`${conference}-${division}`} className="mb-2">
-                                        <div className="text-xs text-base-content/40 mb-1 px-4">{division}</div>
+                                    <div key={`${conference}-${division}`} className="mb-3">
+                                        <div className="text-xs text-base-content/40 mb-1 px-4 font-medium">{division}</div>
                                         {teams.sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
-                                            <button
+                                            <div
                                                 key={team.value}
-                                                className={`btn btn-sm btn-ghost w-full justify-start mb-1 text-left ${
-                                                    theme === team.value ? 'btn-primary' : ''
-                                                }`}
-                                                onClick={() => handleThemeChange(team.value)}
+                                                className="group relative"
                                             >
-                                                <span className={`w-3 h-3 rounded-full mr-2 ${
-                                                    theme === team.value ? 'bg-primary-content' : 'bg-base-300'
-                                                }`}></span>
-                                                <span className="truncate">{team.name}</span>
-                                            </button>
+                                                <button
+                                                    className={`btn btn-sm btn-ghost w-full justify-start mb-1 text-left group-hover:bg-base-200/50 transition-all duration-200 ${
+                                                        theme === team.value ? 'bg-primary/20 text-primary border-primary/30' : ''
+                                                    }`}
+                                                    onClick={() => handleThemeChange(team.value)}
+                                                >
+                                                    <div className="flex items-center gap-3 w-full">
+                                                        {/* Team color preview */}
+                                                        <div className="relative">
+                                                            <div className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
+                                                                theme === team.value
+                                                                    ? 'border-primary scale-110'
+                                                                    : 'border-base-300 group-hover:border-primary/50 group-hover:scale-105'
+                                                            }`}
+                                                            style={{
+                                                                backgroundColor: theme === team.value ? 'var(--p)' : '#6b7280'
+                                                            }}
+                                                            ></div>
+                                                            {theme === team.value && (
+                                                                <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-75"></div>
+                                                            )}
+                                                        </div>
+                                                        <span className="flex-1 truncate text-sm">{team.name}</span>
+                                                        {theme === team.value && (
+                                                            <svg className="w-4 h-4 text-primary animate-scale-in" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                            </svg>
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            </div>
                                         ))}
                                     </div>
                                 ))}
@@ -226,8 +276,9 @@ const NFLThemeDropdown = () => {
                         ))}
                         
                         {filteredTeams.length === 0 && (
-                            <div className="text-center text-base-content/60 py-4">
-                                No teams found matching your criteria
+                            <div className="text-center text-base-content/60 py-8">
+                                <div className="text-lg mb-2">🏈</div>
+                                <div>No teams found matching your criteria</div>
                             </div>
                         )}
                     </div>

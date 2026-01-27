@@ -53,7 +53,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
         }, {} as Record<number, string>);
     }, [formStore.year]);
     
-    return <Card id={"score"} title="Score" extrainfo={extrainfo}>
+    return <>
         <div className="flex gap-4" >
             <div className="w-1/4">
             </div>
@@ -113,7 +113,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                 </div>
             ))}
         </div>
-    </Card>
+    </>
 }))
 
 export default Scores

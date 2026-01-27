@@ -31,7 +31,7 @@ const Yards = observer(React.forwardRef<HTMLDivElement>(function Yards() {
         formStore.setTeamYards(teamIndex, yards);
     }, [formStore]);
     
-    return <Card id="yards" title="Total Yards" extrainfo={extrainfo}>
+    return <>
         <div className="flex gap-4" >
             <div className="w-1/2">
                 <h4 className="flex items-center gap-1">{homeTeam.name} {!!homeTeam.icon && <img style={{width:"1em", height:"1em", verticalAlign: "middle"}} src={homeTeam.icon} />}</h4>
@@ -52,7 +52,7 @@ const Yards = observer(React.forwardRef<HTMLDivElement>(function Yards() {
                 />
             </div>
         </div>
-    </Card>
+    </>
 }))
 
 export default Yards

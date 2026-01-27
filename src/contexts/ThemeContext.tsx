@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 interface ThemeContextType {
   theme: string;
   setTheme: (theme: string) => void;
+  isTransitioning: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -24,6 +25,7 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setThemeState] = useState('mytheme'); // default theme
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Load theme from localStorage on mount
   useEffect(() => {
@@ -34,14 +36,26 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     setIsLoaded(true);
   }, []);
 
-  // Apply theme to document and save to localStorage
+  // Apply theme to document and save to localStorage with smooth transition
   const setTheme = (newTheme: string) => {
-    setThemeState(newTheme);
-    localStorage.setItem('selected-theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
+    if (newTheme !== theme) {
+      setIsTransitioning(true);
+      setThemeState(newTheme);
+      localStorage.setItem('selected-theme', newTheme);
+      
+      // Add smooth transition to document
+      document.documentElement.style.transition = 'all 0.3s ease-in-out';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      
+      // End transition after animation completes
+      setTimeout(() => {
+        setIsTransitioning(false);
+        document.documentElement.style.transition = '';
+      }, 300);
+    }
   };
 
-  // Apply theme to document when theme changes
+  // Apply theme to document when theme changes on load
   useEffect(() => {
     if (isLoaded) {
       document.documentElement.setAttribute('data-theme', theme);
@@ -49,8 +63,34 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   }, [theme, isLoaded]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      {children}
+    <ThemeContext.Provider value={{ theme, setTheme, isTransitioning }}>
+      <div className={`theme-transition ${isTransitioning ? 'transitioning' : ''}`}>
+        {children}
+      </div>
+      
+      {/* Global transition styles */}
+      <style jsx global>{`
+        .theme-transition {
+          transition: all 0.3s ease-in-out;
+        }
+        
+        .theme-transition.transitioning {
+          pointer-events: none;
+        }
+        
+        /* Smooth transitions for theme-dependent elements */
+        .btn, .card, .navbar, .dropdown-content {
+          transition: background-color 0.3s ease-in-out,
+                     border-color 0.3s ease-in-out,
+                     color 0.3s ease-in-out,
+                     box-shadow 0.3s ease-in-out !important;
+        }
+        
+        /* Preserve specific animations during theme transitions */
+        .animate-pulse, .animate-bounce {
+          animation-play-state: running !important;
+        }
+      `}</style>
     </ThemeContext.Provider>
   );
 };
