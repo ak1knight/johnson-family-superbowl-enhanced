@@ -29,12 +29,7 @@ const Nav = () => {
                 </li>
                 <li className={`nav-item`}>
                     <Link href="/big_board" legacyBehavior>
-                        <a className="nav-link">The Big Board</a>
-                    </Link>
-                </li>
-                <li className={`nav-item`}>
-                    <Link href="/propbetboard" legacyBehavior>
-                        <a className="nav-link">Prop Bet Board</a>
+                        <a className="nav-link">Charlie's Big Board</a>
                     </Link>
                 </li>
                 </ul>
@@ -50,12 +45,7 @@ const Nav = () => {
                 </li>
                 <li className={`nav-item`}>
                     <Link href="/big_board" legacyBehavior>
-                        <a className="nav-link">The Big Board</a>
-                    </Link>
-                </li>
-                <li className={`nav-item`}>
-                    <Link href="/propbetboard" legacyBehavior>
-                        <a className="nav-link">Prop Bet Board</a>
+                        <a className="nav-link">Charlie's Big Board</a>
                     </Link>
                 </li>
             </ul>
