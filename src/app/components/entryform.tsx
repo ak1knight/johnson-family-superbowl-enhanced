@@ -139,7 +139,7 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
         <Card
             variant="glass"
             title="Quarter Scores Prediction"
-            isComplete={formStore.team1Scores.length > 0 && formStore.team2Scores.length > 0}
+            isComplete={formStore.team1Scores.length > 0 && formStore.team2Scores.length > 0 && !formStore.team1Scores.includes(undefined) && !formStore.team2Scores.includes(undefined) && !formStore.tiebreakers.slice(0, 3).includes(undefined)}
             icon={
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
                     <span className="text-primary">🏈</span>
@@ -157,8 +157,8 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
         
         <Card
             variant="glass"
-            title="Yardage Tiebreakers"
-            isComplete={formStore.tiebreakers.length > 0}
+            title="Yardage Predictions"
+            isComplete={formStore.team1Yards !== undefined && formStore.team2Yards !== undefined}
             icon={
                 <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center">
                     <span className="text-secondary">📏</span>

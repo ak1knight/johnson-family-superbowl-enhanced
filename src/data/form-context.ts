@@ -29,8 +29,8 @@ export class FormStore {
     year: string;
     team1Scores: ScoreArray = [undefined, undefined, undefined, undefined];
     team2Scores: ScoreArray = [undefined, undefined, undefined, undefined];
-    team1Yards: number = 0;
-    team2Yards: number = 0;
+    team1Yards: number | undefined = undefined;
+    team2Yards: number | undefined = undefined;
     tiebreakers: ScoreArray = [undefined, undefined, undefined, undefined];
     questionAnswers: string[] = [];
     name: string = ''

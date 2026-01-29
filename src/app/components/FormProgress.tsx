@@ -25,7 +25,7 @@ const FormProgress = ({ currentStep, totalSteps, completedSections, sectionNames
   };
 
   return (
-    <div className="sticky top-4 z-40 bg-base-100/95 backdrop-blur-sm rounded-2xl shadow-lg border border-base-300 p-4 mb-6">
+    <div className="sticky top-4 z-40 bg-base-100/95 backdrop-blur-sm rounded-2xl shadow-lg border border-base-300 p-4 mb-6 max-h-[calc(100vh-2rem)] overflow-y-auto">
       {/* Progress Header */}
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold text-base-content">Form Progress</h3>

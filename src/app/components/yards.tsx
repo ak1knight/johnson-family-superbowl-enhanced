@@ -37,7 +37,7 @@ const Yards = observer(React.forwardRef<HTMLDivElement>(function Yards() {
                 <h4 className="flex items-center gap-1">{homeTeam.name} {!!homeTeam.icon && <img style={{width:"1em", height:"1em", verticalAlign: "middle"}} src={homeTeam.icon} />}</h4>
                 <input
                     type="number"
-                    value={formStore.team1Yards.toString()}
+                    value={formStore.team1Yards?.toString() || ''}
                     className="input input-bordered w-full bg-base-200 focus:bg-primary focus:text-primary-content"
                     onChange={(e) => handleYardsChange(TEAM_INDEX.HOME, e.target.value)}
                 />
@@ -46,7 +46,7 @@ const Yards = observer(React.forwardRef<HTMLDivElement>(function Yards() {
                 <h4 className="flex items-center gap-1" >{awayTeam.name} {!!awayTeam.icon && <img style={{width:"1em", height:"1em", verticalAlign: "middle"}} src={awayTeam.icon} />}</h4>
                 <input
                     type="number"
-                    value={formStore.team2Yards.toString()}
+                    value={formStore.team2Yards?.toString() || ''}
                     className="input input-bordered w-full bg-base-200 focus:bg-primary focus:text-primary-content"
                     onChange={(e) => handleYardsChange(TEAM_INDEX.AWAY, e.target.value)}
                 />

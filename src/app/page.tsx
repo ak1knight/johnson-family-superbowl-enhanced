@@ -25,13 +25,17 @@ const HomeContent = observer(() => {
     const completedSections = useMemo(() => {
         const completed = [];
         
-        // Check if scores are filled
-        if (formStore.team1Scores.length > 0 && formStore.team2Scores.length > 0) {
+        // Check if scores are filled (all 4 quarters for both teams)
+        const team1Complete = formStore.team1Scores.every(s => s !== undefined && s !== null);
+        const team2Complete = formStore.team2Scores.every(s => s !== undefined && s !== null);
+        const tiebreakerComplete = formStore.tiebreakers.slice(0, 3).every(t => t !== undefined && t !== null);
+        if (team1Complete && team2Complete && tiebreakerComplete) {
             completed.push('Team Scores');
         }
         
-        // Check if tiebreakers are filled
-        if (formStore.tiebreakers.length > 0) {
+        // Check if tiebreakers are filled (first 3 quarters required)
+        const yardageComplete = formStore.team1Yards !== undefined && formStore.team2Yards !== undefined;
+        if (yardageComplete) {
             completed.push('Yardage Predictions');
         }
         
@@ -49,7 +53,15 @@ const HomeContent = observer(() => {
         }
         
         return completed;
-    }, [formStore, year]);
+    }, [
+        formStore.team1Scores[0], formStore.team1Scores[1], formStore.team1Scores[2], formStore.team1Scores[3],
+        formStore.team2Scores[0], formStore.team2Scores[1], formStore.team2Scores[2], formStore.team2Scores[3],
+        formStore.tiebreakers[0], formStore.tiebreakers[1], formStore.tiebreakers[2],
+        formStore.team1Yards, formStore.team2Yards,
+        formStore.questionAnswers.join(','), // Join to create a single dependency
+        formStore.name,
+        year
+    ]);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral via-base-100 to-neutral/50">
@@ -61,7 +73,7 @@ const HomeContent = observer(() => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Desktop Sidebar - Progress Indicator */}
                     <div className="lg:col-span-3 order-2 lg:order-1">
-                        <div className="hidden lg:block">
+                        <div className="hidden lg:block sticky top-4 h-fit">
                             <FormProgress
                                 currentStep={currentStep}
                                 totalSteps={sectionNames.length}
@@ -73,20 +85,23 @@ const HomeContent = observer(() => {
 
                     {/* Main Form Content */}
                     <div className="lg:col-span-9 order-1 lg:order-2">
-                        {/* Mobile Progress Indicator */}
-                        <div className="lg:hidden mb-6">
-                            <div className="bg-base-100/80 backdrop-blur-sm rounded-2xl p-4 border border-base-300/50">
+                        {/* Mobile Progress Indicator - Sticky */}
+                        <div className="lg:hidden mb-6 sticky top-0 z-50">
+                            <div className="bg-base-100/95 backdrop-blur-md rounded-2xl p-4 border border-base-300/50 shadow-lg mx-2">
                                 <div className="flex justify-between items-center mb-3">
                                     <h3 className="font-semibold">Progress</h3>
                                     <span className="text-sm text-base-content/70">
                                         {completedSections.length}/{sectionNames.length}
                                     </span>
                                 </div>
-                                <div className="w-full bg-base-300 rounded-full h-2">
+                                <div className="w-full bg-base-300 rounded-full h-2.5">
                                     <div
-                                        className="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500"
+                                        className="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500 relative overflow-hidden"
                                         style={{ width: `${(completedSections.length / sectionNames.length) * 100}%` }}
-                                    />
+                                    >
+                                        {/* Animated shimmer effect for mobile too */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 animate-shimmer"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -98,6 +113,18 @@ const HomeContent = observer(() => {
                     </div>
                 </div>
             </div>
+
+            {/* Add shimmer animation for mobile progress */}
+            <style jsx>{`
+                @keyframes shimmer {
+                    0% { transform: translateX(-100%) skewX(-12deg); }
+                    100% { transform: translateX(200%) skewX(-12deg); }
+                }
+                
+                .animate-shimmer {
+                    animation: shimmer 2s infinite;
+                }
+            `}</style>
 
             {/* Footer with helpful tips */}
             <footer className="bg-base-200/50 backdrop-blur-sm border-t border-base-300/50 mt-16">
