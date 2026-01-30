@@ -211,7 +211,7 @@ export class FormStore {
             "Quarter 2": { score: scores[QUARTERS.SECOND] || 0 },
             "Quarter 3": { score: scores[QUARTERS.THIRD] || 0 },
             "Final": { score: scores[QUARTERS.FINAL] || 0 },
-            yards
+            yards: yards || 0
         };
     }
 

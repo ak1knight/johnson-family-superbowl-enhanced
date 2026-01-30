@@ -24,18 +24,14 @@ function toSeconds(str: string) {
 }
 
 type WinningNumbers = {
-    "Quarter 1"?: number, 
-    "Quarter 2"?: number, 
-    "Quarter 3"?: number, 
-    "Final"?: number, 
+    "Quarter 1"?: number,
+    "Quarter 2"?: number,
+    "Quarter 3"?: number,
+    "Final"?: number,
     topthree?: [first: number, second: number, third: number],
     anthemLength?: number
-    [TeamName.Chiefs]?: number,
-    "49ers"?: number,
-    [TeamName.Buccaneers]?: number,
-    [TeamName.Bengals]?: number,
-    [TeamName.Rams]?: number,
-    [TeamName.Eagles]?: number,
+} & {
+    [K in TeamName]?: number;
 }
 
 const BigBoardTable = ({year}: {year: string | number}) => {
