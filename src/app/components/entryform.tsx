@@ -1,4 +1,4 @@
-import React, { FormEvent, useContext, useState, useMemo } from 'react';
+import React, { FormEvent, useContext, useState } from 'react';
 import { useRouter } from "next/navigation";
 import Card from "./card";
 import Scores from './scores';
@@ -7,7 +7,7 @@ import { Question } from "../../data/formdata";
 import { FormContext, ValidationErrors } from '@/data/form-context';
 import Image from 'next/image';
 import { observer } from 'mobx-react';
-import { useDebouncedCallback, useDebouncedValidation, usePerformanceMonitor } from '../../utils/performance';
+import { useDebouncedCallback, usePerformanceMonitor } from '../../utils/performance';
 
 
 // let formData = {};
@@ -38,13 +38,6 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
     // Performance monitoring
     usePerformanceMonitor('EntryForm', process.env.NODE_ENV === 'development');
 
-    // Debounced validation to reduce unnecessary validation calls (validation only, not UI updates)
-    const debouncedValidateForm = useDebouncedCallback(() => {
-        const errors = formStore.getValidationErrors(questions);
-        setValidationErrors(errors);
-        return Object.keys(errors).length === 0;
-    }, 300, [formStore, questions]);
-
     // Use centralized validation from FormStore (immediate for form submission)
     const validateForm = () => {
         const errors = formStore.getValidationErrors(questions);
@@ -62,34 +55,8 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
     }, 150, [validationErrors]);
 
     // Debounced form validation for real-time feedback
-    const nameValidation = useDebouncedValidation(
-        formStore.name,
-        (name) => {
-            if (!name.trim()) return "Name is required";
-            if (name.trim().length < 2) return "Name must be at least 2 characters";
-            return null;
-        },
-        300
-    );
 
     // Pre-compute question validations at the top level to avoid hooks rule violations
-    const questionValidations = questions.map((q, index) => {
-        const validation = useDebouncedValidation(
-            formStore.questionAnswers[index] || '',
-            (answer) => {
-                if (!answer || answer.trim() === '') {
-                    return `Answer for "${q.question}" is required`;
-                }
-                return null;
-            },
-            300
-        );
-        
-        return {
-            questionIndex: index,
-            validation
-        };
-    });
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();

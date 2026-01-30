@@ -20,7 +20,8 @@ async function PATCH(req: Request, { params }: { params: Promise<{ year: string 
         let existingEntry;
         try {
             existingEntry = await DatabaseService.getWinningEntryByYear(year);
-        } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_error) {
             // If no existing entry, start with empty object
             existingEntry = {};
         }

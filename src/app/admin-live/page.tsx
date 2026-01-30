@@ -2,7 +2,6 @@
 
 import React from 'react';
 import LiveWinningEntryForm from "../components/LiveWinningEntryForm"
-import Layout from '../components/layout'
 import { questions, getLatestAvailableYear } from "../../data/formdata";
 import NFLThemeDropdown from '../components/NFLThemeDropdown';
 
