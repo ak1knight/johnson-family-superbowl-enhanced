@@ -3,10 +3,12 @@
 import React from 'react';
 import LiveWinningEntryForm from "../components/LiveWinningEntryForm"
 import Layout from '../components/layout'
-import { questions } from "../../data/formdata";
+import { questions, getLatestAvailableYear } from "../../data/formdata";
 import NFLThemeDropdown from '../components/NFLThemeDropdown';
 
 const AdminLivePage = () => {
+    const currentYear = getLatestAvailableYear();
+    
     return (
         <div className='container m-auto'>
             <div className="bg-primary text-base-100 h-72 relative rounded-b-lg mb-2">
@@ -26,7 +28,7 @@ const AdminLivePage = () => {
             </div> */}
 
             <div className="container mt-3">
-                <LiveWinningEntryForm questions={questions[2025]} year={2025} />
+                <LiveWinningEntryForm questions={questions[currentYear]} year={parseInt(currentYear)} />
             </div>
         </div>
     );
