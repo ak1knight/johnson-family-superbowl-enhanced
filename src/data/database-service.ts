@@ -1,5 +1,4 @@
 import apiCalls from './index';
-import { Entry } from './formdata';
 
 /**
  * Database service abstraction layer
