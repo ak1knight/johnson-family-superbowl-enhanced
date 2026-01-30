@@ -39,6 +39,7 @@ jobs:
           name: build-artifacts
           path: .next/
           retention-days: 7
+          include-hidden-files: true
 
   security-scan:
     name: Security Scan
