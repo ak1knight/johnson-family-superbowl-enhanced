@@ -12,7 +12,7 @@ interface BigBoardHeroProps {
 }
 
 const BigBoardHero = ({ selectedYear, onYearChange, availableYears, totalEntries }: BigBoardHeroProps) => {
-  const { theme } = useTheme();
+  useTheme();
   const [animatedCount, setAnimatedCount] = useState(0);
 
   // Animate the entry count

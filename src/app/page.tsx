@@ -10,7 +10,7 @@ import { observer } from 'mobx-react';
 
 const HomeContent = observer(() => {
     const [year] = useState(2026);
-    const [currentStep, setCurrentStep] = useState(0);
+    const [currentStep] = useState(0);
     const formStore = React.useContext(FormContext);
 
     // Define form sections for progress tracking

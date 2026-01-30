@@ -1,11 +1,9 @@
 import React, { useContext, useMemo, useCallback } from "react"
-import Card from "./card"
 import { periodNames, getTiebreakerForQuarter, PeriodName } from "../../data/formdata"
 import { FormContext, QUARTERS, TEAM_INDEX } from "@/data/form-context"
 import { observer } from "mobx-react"
 import { usePerformanceMonitor, memoizeWithLRU } from "../../utils/performance"
 
-const extrainfo = ''
 
 // Memoized helper function to parse score input with validation
 const parseScore = memoizeWithLRU((value: string): number | undefined => {

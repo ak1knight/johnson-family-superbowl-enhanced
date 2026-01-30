@@ -9,7 +9,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ year }: HeroSectionProps) => {
-  const { theme } = useTheme();
+  useTheme();
   const [timeToGame, setTimeToGame] = useState<{
     days: number;
     hours: number;
@@ -84,7 +84,7 @@ const HeroSection = ({ year }: HeroSectionProps) => {
                   { label: 'Hours', value: timeToGame.hours },
                   { label: 'Minutes', value: timeToGame.minutes },
                   { label: 'Seconds', value: timeToGame.seconds }
-                ].map((item, index) => (
+                ].map((item) => (
                   <div key={item.label} className="bg-secondary/20 backdrop-blur-sm rounded-xl p-4 min-w-[80px]">
                     <div className="text-2xl md:text-3xl font-bold text-accent">{item.value}</div>
                     <div className="text-sm opacity-80">{item.label}</div>

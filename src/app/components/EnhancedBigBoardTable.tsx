@@ -286,7 +286,7 @@ const BigBoardTable = ({ year, onEntriesLoad }: BigBoardTableProps) => {
                                 </td>
                             </tr>
                         ) : entries && entries.length > 0 ? (
-                            sortedEntries.map((e, index) => {
+                            sortedEntries.map((e) => {
                                 const finalPlace = checkFinalScore(e.entry);
                                 const isWinner = finalPlace !== false && finalPlace > -1;
 
