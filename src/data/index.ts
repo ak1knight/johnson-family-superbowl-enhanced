@@ -134,7 +134,7 @@ const apiCalls = {
 
             return entryId;
         } catch (error) {
-            console.error(`Error creating entry for year ${year}:`, error);
+            console.error("Error creating entry for year %s:", year, error);
             throw new Error(`Failed to create entry for year ${year}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     },
