@@ -174,9 +174,9 @@ export const getAvailableYears = memoizeWithLRU((): string[] => {
     return Object.keys(teams).sort();
 }, 1, () => 'available-years');
 
-export const getCurrentYear = memoizeWithLRU((): string => {
+export const getCurrentYear = (): string => {
     return new Date().getFullYear().toString();
-}, 1, () => `current-year-${Math.floor(Date.now() / (1000 * 60 * 60))}`); // Cache for 1 hour
+};
 
 export const getLatestAvailableYear = memoizeWithLRU((): string => {
     const years = getAvailableYears();
