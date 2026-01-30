@@ -4,7 +4,9 @@ export enum TeamName {
     "49ers" = "49ers",
     Rams = "Rams",
     Bengals = "Bengals",
-    Eagles = "Eagles"
+    Eagles = "Eagles",
+    Patriots = "Patriots",
+    Seahawks = "Seahawks"
 }
 
 export type Team = {
@@ -24,7 +26,8 @@ export type Question = {
     short: string,
     extrainfo?: string,
     config?: {placeholder: string},
-    options?: Option[]
+    options?: Option[],
+    gamePhase?: 'pre-game' | 'q1' | 'q2' | 'halftime' | 'q3' | 'q4' | 'post-game'
 }
 
 export type AnsweredQuestion = Question & {
@@ -40,56 +43,173 @@ export const teams:{[year: string]: Year} = {
     "2023": [{ name: TeamName.Chiefs, icon: "/images/kc.svg" }, { name: TeamName.Eagles, icon: "/images/phi.svg" }],
     "2024": [{ name: TeamName.Chiefs, icon: "/images/kc.svg" }, { name: TeamName["49ers"], icon: "/images/sf.svg" }],
     "2025": [{ name: TeamName.Chiefs, icon: "/images/kc.svg" }, { name: TeamName.Eagles, icon: "/images/phi.svg" }],
-} as const; 
+    "2026": [{ name: TeamName.Patriots, icon: "/images/ne.svg" }, { name: TeamName.Seahawks, icon: "/images/sea.svg" }],
+} as const;
+
+// Super Bowl dates configuration
+export const superBowlDates: Record<string, string> = {
+    "2020": "February 2, 2020",
+    "2021": "February 7, 2021",
+    "2022": "February 13, 2022",
+    "2023": "February 12, 2023",
+    "2024": "February 11, 2024",
+    "2025": "February 9, 2025",
+    "2026": "February 8, 2026",
+};
 
 export const periodNames = ["Quarter 1", "Quarter 2", "Quarter 3", "Final"] as const;
+export type PeriodName = typeof periodNames[number];
 
+// Improved TeamScore type with better structure
 export type TeamScore = {
-    "Quarter 1": {
+    [K in PeriodName]: {
         score: number;
     };
-    "Quarter 2": {
-        score: number;
-    };
-    "Quarter 3": {
-        score: number;
-    };
-    "Final": {
-        score: number;
-    };
+} & {
     yards: number;
 };
 
+// Type for quarter tiebreaker data
+export type QuarterTiebreaker = {
+    tiebreaker: number;
+};
+
+// More type-safe Entry interface
 export type Entry = {
-    [index: number]: AnsweredQuestion,
-    [TeamName.Chiefs]?: TeamScore,
-    "49ers"?: TeamScore,
-    [TeamName.Buccaneers]?: TeamScore,
-    [TeamName.Bengals]?: TeamScore,
-    [TeamName.Rams]?: TeamScore,
-    [TeamName.Eagles]?: TeamScore,
-    "Quarter 1": {
-        tiebreaker: number
-    },
-    "Quarter 2": {
-        tiebreaker: number
-    },
-    "Quarter 3": {
-        tiebreaker: number
-    },
-    "Final": {
-        tiebreaker: number
-    },
-    name: string
-}
+    // Dynamic team scores based on TeamName enum
+    [K in TeamName]?: TeamScore;
+} & {
+    // Quarter tiebreakers
+    [K in PeriodName]: QuarterTiebreaker;
+} & {
+    // Required fields
+    name: string;
+} & {
+    // Question responses - using index signatures for dynamic questions
+    [index: number]: AnsweredQuestion;
+};
+
+// Helper type for creating entries with better type safety
+export type EntryData = {
+    homeTeam: TeamName;
+    awayTeam: TeamName;
+    homeTeamScore: TeamScore;
+    awayTeamScore: TeamScore;
+    tiebreakers: [number, number, number, number];
+    name: string;
+    questionAnswers: AnsweredQuestion[];
+};
 
 export const tiebreakers: Record<string, Record<string, string>> = {
     "2021": {"Quarter 1": "Chiefs Passing Yards", "Quarter 2": "Buccaneers Rushing Yards", "Quarter 3": "Combined Penalty Yards"},
     "2022": {"Quarter 1": "Bengals Passing Yards", "Quarter 2": "Rams Rushing Yards", "Quarter 3": "Combined Penalty Yards"},
     "2023": {"Quarter 1": "Eagles Passing Yards", "Quarter 2": "Chiefs Rushing Yards", "Quarter 3": "Combined Penalty Yards"},
     "2024": {"Quarter 1": "Chiefs Passing Yards", "Quarter 2": "49ers Rushing Yards", "Quarter 3": "Combined Penalty Yards"},
-    "2025": {"Quarter 1": "Chiefs Passing Yards", "Quarter 2": "Eagles Rushing Yards", "Quarter 3": "Combined Penalty Yards"}
+    "2025": {"Quarter 1": "Chiefs Passing Yards", "Quarter 2": "Eagles Rushing Yards", "Quarter 3": "Combined Penalty Yards"},
+    "2026": {"Quarter 1": "Patriots Passing Yards", "Quarter 2": "Seahawks Rushing Yards", "Quarter 3": "Combined Penalty Yards"}
 }
+
+// Lazy loading and memoization imports
+import { memoizeWithLRU } from '../utils/performance';
+
+// Memoized helper functions for team data access with error handling
+export const getTeamsForYear = memoizeWithLRU((year: string): Year => {
+    const teamData = teams[year];
+    if (!teamData) {
+        throw new Error(`No team data found for year: ${year}. Available years: ${Object.keys(teams).join(', ')}`);
+    }
+    return teamData;
+}, 50, (year) => year);
+
+export const getTeamByIndex = memoizeWithLRU((year: string, index: 0 | 1): Team => {
+    try {
+        const yearTeams = getTeamsForYear(year);
+        return yearTeams[index];
+    } catch (error) {
+        throw new Error(`Failed to get team at index ${index} for year ${year}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}, 100, (year, index) => `${year}-${index}`);
+
+export const getHomeTeam = memoizeWithLRU((year: string): Team => {
+    return getTeamByIndex(year, 0);
+}, 50, (year) => `home-${year}`);
+
+export const getAwayTeam = memoizeWithLRU((year: string): Team => {
+    return getTeamByIndex(year, 1);
+}, 50, (year) => `away-${year}`);
+
+export const getQuestionsForYear = memoizeWithLRU((year: string): Question[] => {
+    const questionData = questions[year];
+    if (!questionData) {
+        throw new Error(`No questions found for year: ${year}. Available years: ${Object.keys(questions).join(', ')}`);
+    }
+    return questionData;
+}, 20, (year) => `questions-${year}`);
+
+export const getTiebreakersForYear = memoizeWithLRU((year: string): Record<string, string> => {
+    const tiebreakerData = tiebreakers[year];
+    if (!tiebreakerData) {
+        throw new Error(`No tiebreakers found for year: ${year}. Available years: ${Object.keys(tiebreakers).join(', ')}`);
+    }
+    return tiebreakerData;
+}, 20, (year) => `tiebreakers-${year}`);
+
+export const getTiebreakerForQuarter = memoizeWithLRU((year: string, quarter: PeriodName): string => {
+    try {
+        const yearTiebreakers = getTiebreakersForYear(year);
+        const tiebreaker = yearTiebreakers[quarter];
+        if (!tiebreaker) {
+            throw new Error(`No tiebreaker found for quarter: ${quarter} in year: ${year}`);
+        }
+        return tiebreaker;
+    } catch (error) {
+        throw new Error(`Failed to get tiebreaker for quarter ${quarter} in year ${year}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}, 100, (year, quarter) => `${year}-${quarter}`);
+
+// Memoized validation helpers
+export const isValidYear = memoizeWithLRU((year: string): boolean => {
+    return year in teams;
+}, 50, (year) => year);
+
+export const isValidTeamName = memoizeWithLRU((teamName: string): teamName is TeamName => {
+    return Object.values(TeamName).includes(teamName as TeamName);
+}, 50, (teamName) => teamName);
+
+export const isValidPeriodName = memoizeWithLRU((period: string): period is PeriodName => {
+    return periodNames.includes(period as PeriodName);
+}, 20, (period) => period);
+
+// Memoized year utilities for better performance
+export const getAvailableYears = memoizeWithLRU((): string[] => {
+    return Object.keys(teams).sort();
+}, 1, () => 'available-years');
+
+export const getCurrentYear = (): string => {
+    return new Date().getFullYear().toString();
+};
+
+export const getLatestAvailableYear = memoizeWithLRU((): string => {
+    const years = getAvailableYears();
+    return years[years.length - 1];
+}, 1, () => 'latest-available-year');
+
+// Performance optimized question filtering
+export const getQuestionsByType = memoizeWithLRU((year: string, hasOptions: boolean): Question[] => {
+    const allQuestions = getQuestionsForYear(year);
+    return allQuestions.filter(q => hasOptions ? !!q.options : !q.options);
+}, 40, (year, hasOptions) => `${year}-${hasOptions ? 'options' : 'text'}`);
+
+// Batch data loading utility
+export const getBatchData = memoizeWithLRU((year: string) => {
+    return {
+        teams: getTeamsForYear(year),
+        questions: getQuestionsForYear(year),
+        tiebreakers: getTiebreakersForYear(year),
+        homeTeam: getHomeTeam(year),
+        awayTeam: getAwayTeam(year)
+    };
+}, 10, (year) => `batch-${year}`);
 
 export const questions: Record<string, Question[]> = {
     "2020": [
@@ -417,8 +537,9 @@ export const questions: Record<string, Question[]> = {
         {
             question: "How long will it take Jon Batiste to sing the National Anthem?",
             short: "National Anthem",
-            extrainfo: `Neil Diamond holds the record for the quickest rendition of the national anthem in Super Bowl history. He raced through The Star-Spangled Banner 
-                in just 1 minute and 2 seconds at Super Bowl 21. By contrast, it took Alicia Keys 2 minutes and 36 seconds at Super Bowl 47. The average time now stands 
+            gamePhase: 'pre-game',
+            extrainfo: `Neil Diamond holds the record for the quickest rendition of the national anthem in Super Bowl history. He raced through The Star-Spangled Banner
+                in just 1 minute and 2 seconds at Super Bowl 21. By contrast, it took Alicia Keys 2 minutes and 36 seconds at Super Bowl 47. The average time now stands
                 at 1 minute and 43 seconds.`,
             config: {
                 placeholder: "M:SS"
@@ -427,33 +548,39 @@ export const questions: Record<string, Question[]> = {
         {
             question: "What will the opening coin toss land on?",
             short: 'Coin Toss',
+            gamePhase: 'pre-game',
             extrainfo: 'Since the first Super Bowl, HEADS has come up 25 times and TAILS 28. The winner of the Super Bowl has won the coin toss 24 times with HEADS coming up 12 times.',
             options: [{ name: "Heads", score: 100 }, { name: "Tails", score: 100 }]
         },
         {
             question: "Which will happen first in the game?",
             short: 'Sack or TD',
+            gamePhase: 'q1',
             options: [{ name: "Sack", score: 90 }, { name: "Touchdown", score: 100 }]
         },
         {
             question: "Which team will score first?",
             short: 'First Score',
+            gamePhase: 'q1',
             options: [{ name: "Philadelphia", score: 100, image: "/images/phi.svg" }, { name: "Kansas City", score: 100, image: "/images/kc.svg" }]
         },
         {
             question: "Which DC or Marvel movie trailer will appear first during the game broadcast?",
             short: 'Commercial',
+            gamePhase: 'q1',
             options: [{ name: "Superman", score: 100}, { name: "Captain America: Brave New World", score: 100}, { name: "Thunderbolts", score: 100}, { name: "The Fantastic Four: First Steps", score: 100}]
         },
         {
             question: "Will Saquon Barkley reach 30 yards rushing by the end of the first quarter?",
             short: 'Saquon',
+            gamePhase: 'q1',
             options: [{ name: "Yes", score: 100 }, { name: "No", score: 100 }],
             extrainfo: "Barkley needs 30 rushing yards to break the record for total rushing yards in a regular season+postseason. His rushing yards prop for the Super Bowl is 111.5 (BetMGM)"
         },
         {
             question: "Who will be the first to make a guest appearance with Kendrick Lamar during the halftime show?",
             short: 'HT Guest Artist',
+            gamePhase: 'halftime',
             extrainfo: "If multiple artists appear, points will be given the first artist that appears (besides other)",
             options: [
                 { name: "Future", score: 100 },
@@ -466,26 +593,147 @@ export const questions: Record<string, Question[]> = {
         {
             question: "Will SZA wear a jersey of any kind during the halftime performance?",
             short: 'HT Jersey',
+            gamePhase: 'halftime',
             options: [{ name: "Yes", score: 100 }, { name: "No", score: 75 }]
         },
         {
             question: "Will there be a fourth quarter comeback?",
             short: 'Comeback',
+            gamePhase: 'post-game',
             options: [{ name: "Yes", score: 140 }, { name: "No", score: 60 }]
         },
         {
             question: "Will the team who scores first win the game?",
             short: 'First Score Wins',
+            gamePhase: 'post-game',
             options: [{ name: "Yes", score: 85 }, { name: "No", score: 115 }]
         },
         {
             question: "Who will win Super Bowl LIX MVP?",
             short: 'MVP',
+            gamePhase: 'post-game',
             options: [
                 { name: "Patrick Mahomes (KC QB)", image: "/images/mahomes2.webp", score: 90},
                 {name: "Saquon Barkley (PHI RB)", image: "/images/barkley.webp", score: 110 },
                 { name: "Jalen Hurts (PHI QB)", image: "/images/hurts.webp", score: 125 },
                 { name: "Other", score: 200 }
+            ]
+        }
+    ],
+    "2026": [
+        {
+            question: "How long will it take to sing the National Anthem?",
+            short: "National Anthem",
+            gamePhase: 'pre-game',
+            extrainfo: `The average Super Bowl anthem time is 1:43. Shortest: Neil Diamond at 1:02. Longest: Alicia Keys at 2:36.`,
+            config: {
+                placeholder: "M:SS"
+            }
+        },
+        {
+            question: "What will the opening coin toss land on?",
+            short: 'Coin Toss',
+            gamePhase: 'pre-game',
+            extrainfo: 'Since 1967: HEADS 29 times, TAILS 30 times. Very close to 50/50!',
+            options: [{ name: "Heads", score: 75 }, { name: "Tails", score: 75 }]
+        },
+        {
+            question: "Which team will score first?",
+            short: 'First Score',
+            gamePhase: 'q1',
+            options: [{ name: "New England", score: 75, image: "/images/ne.svg" }, { name: "Seattle", score: 75, image: "/images/sea.svg" }]
+        },
+        {
+            question: "What will be the first scoring play of the game?",
+            short: 'First Scoring Play',
+            gamePhase: 'q1',
+            options: [
+                { name: "Patriots Field Goal", score: 100, image: "/images/ne.svg" },
+                { name: "Patriots Touchdown", score: 100, image: "/images/ne.svg" },
+                { name: "Seahawks Field Goal", score: 100, image: "/images/sea.svg" },
+                { name: "Seahawks Touchdown", score: 100, image: "/images/sea.svg" },
+                { name: "Safety", score: 300 },
+                { name: "Defensive/Special Teams TD", score: 200 }
+            ]
+        },
+        {
+            question: "Will there be a successful 2-point conversion in the game?",
+            short: '2-Point Conversion',
+            gamePhase: 'post-game',
+            extrainfo: 'Only happens in about 15% of Super Bowls historically',
+            options: [{ name: "Yes", score: 150 }, { name: "No", score: 75 }]
+        },
+        {
+            question: "Which will happen first in the game?",
+            short: 'Sack or Interception',
+            gamePhase: 'q1',
+            options: [{ name: "Sack", score: 75 }, { name: "Interception", score: 125 }, { name: "Neither in Q1", score: 100 }]
+        },
+        {
+            question: "Who will be the halftime performer's first guest artist?",
+            short: 'HT Guest Artist',
+            gamePhase: 'halftime',
+            extrainfo: "Recent Super Bowls have featured surprise guests",
+            options: [
+                { name: "No Guest Artists", score: 125 },
+                { name: "Previous Super Bowl Performer", score: 100 },
+                { name: "Current Chart-Topper", score: 100 },
+                { name: "Rock/Metal Artist", score: 150 },
+                { name: "Country Artist", score: 175 },
+                { name: "Completely Unexpected", score: 200 }
+            ]
+        },
+        {
+            question: "What color will dominate the halftime stage lighting?",
+            short: 'HT Lighting',
+            gamePhase: 'halftime',
+            options: [
+                { name: "Blue", score: 100 },
+                { name: "Red", score: 100 },
+                { name: "Purple", score: 125 },
+                { name: "Green", score: 125 },
+                { name: "Gold/Yellow", score: 150 },
+                { name: "Multi-color/Rainbow", score: 75 }
+            ]
+        },
+        {
+            question: "Will either team score more than 14 points in a single quarter?",
+            short: 'Big Quarter',
+            gamePhase: 'post-game',
+            options: [{ name: "Yes", score: 125 }, { name: "No", score: 100 }]
+        },
+        {
+            question: "Will the game go to overtime?",
+            short: 'Overtime',
+            gamePhase: 'post-game',
+            extrainfo: 'Only 1 Super Bowl has ever gone to OT (Patriots vs Falcons, 2017)',
+            options: [{ name: "Yes", score: 400 }, { name: "No", score: 50 }]
+        },
+        {
+            question: "What will be the margin of victory?",
+            short: 'Margin of Victory',
+            gamePhase: 'post-game',
+            options: [
+                { name: "1-3 points", score: 150 },
+                { name: "4-7 points", score: 100 },
+                { name: "8-14 points", score: 100 },
+                { name: "15-21 points", score: 125 },
+                { name: "22+ points", score: 175 }
+            ]
+        },
+        {
+            question: "Who will win Super Bowl LX MVP?",
+            short: 'MVP',
+            gamePhase: 'post-game',
+            options: [
+                { name: "Patriots QB", score: 100 },
+                { name: "Seahawks QB", score: 100 },
+                { name: "Patriots RB", score: 150 },
+                { name: "Seahawks RB", score: 150 },
+                { name: "Patriots WR/TE", score: 125 },
+                { name: "Seahawks WR/TE", score: 125 },
+                { name: "Defensive Player", score: 200 },
+                { name: "Kicker/Special Teams", score: 500 }
             ]
         }
     ],

@@ -2,7 +2,212 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply bg-neutral transition-colors duration-300;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Enhanced focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+}
 
-body {
-  @apply bg-neutral
+@layer components {
+  /* Smooth page transitions */
+  .page-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  /* Enhanced button hover effects */
+  .btn {
+    @apply transition-all duration-200 ease-out;
+  }
+  
+  .btn:hover {
+    @apply transform scale-105 shadow-lg;
+  }
+  
+  .btn:active {
+    @apply transform scale-95;
+  }
+  
+  /* Responsive typography */
+  .text-responsive-xl {
+    @apply text-2xl md:text-3xl lg:text-4xl xl:text-5xl;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg md:text-xl lg:text-2xl xl:text-3xl;
+  }
+  
+  .text-responsive-md {
+    @apply text-base md:text-lg lg:text-xl;
+  }
+  
+  /* Enhanced card animations */
+  .card-hover {
+    @apply transition-all duration-300 ease-out hover:shadow-2xl hover:-translate-y-1;
+  }
+  
+  /* Glass morphism effect */
+  .glass-effect {
+    @apply bg-base-100/80 backdrop-blur-md border border-base-300/50;
+  }
+  
+  /* Improved form inputs */
+  .input-enhanced {
+    @apply transition-all duration-200 focus:scale-[1.02] focus:shadow-lg;
+  }
+  
+  /* Mobile-first responsive containers */
+  .container-responsive {
+    @apply px-4 sm:px-6 lg:px-8 mx-auto;
+  }
+  
+  /* Enhanced dropdown animations */
+  .dropdown-content {
+    @apply animate-fade-in;
+  }
+  
+  /* Smooth scroll indicators */
+  .scroll-indicator {
+    @apply fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary z-50;
+    width: var(--scroll-progress, 0%);
+  }
+}
+
+@layer utilities {
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out;
+  }
+  
+  /* Responsive spacing */
+  .spacing-responsive {
+    @apply p-4 md:p-6 lg:p-8;
+  }
+  
+  .gap-responsive {
+    @apply gap-4 md:gap-6 lg:gap-8;
+  }
+  
+  /* Enhanced shadows */
+  .shadow-soft {
+    box-shadow: 0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04);
+  }
+  
+  .shadow-strong {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  }
+}
+
+/* Custom keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Enhanced scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-base-200;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-base-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .btn {
+    @apply min-h-12;
+  }
+  
+  .input {
+    @apply min-h-12;
+  }
+  
+  /* Larger touch targets for mobile */
+  .btn-mobile {
+    @apply min-h-14 text-lg;
+  }
+  
+  /* Better spacing on mobile */
+  .card-mobile {
+    @apply rounded-lg;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .btn,
+  .input,
+  .card {
+    @apply border-2;
+  }
 }

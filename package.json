@@ -5,16 +5,17 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --turbopack",
-    "lint": "next lint",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint:check": "eslint . --ext .js,.jsx,.ts,.tsx",
     "start": "next start"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.734.0",
     "@aws-sdk/lib-dynamodb": "^3.734.0",
-    "aws-sdk": "^2.1692.0",
+    "aws-sdk": "^2.1693.0",
     "mobx": "^6.13.5",
     "mobx-react": "^9.2.0",
-    "next": "15.1.6",
+    "next": "^16.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sst": "3.7.14"

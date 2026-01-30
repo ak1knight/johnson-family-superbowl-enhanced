@@ -1,0 +1,188 @@
+name: Security Scan
+
+on:
+  schedule:
+    # Run security scan daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run npm audit
+        run: |
+          echo "Running npm audit..."
+          npm audit --audit-level=moderate --json > audit-results.json || true
+          
+          # Display human-readable results
+          npm audit --audit-level=moderate || true
+          
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-results
+          path: audit-results.json
+          retention-days: 30
+          
+      - name: Check for high/critical vulnerabilities
+        run: |
+          HIGH_VULNS=$(cat audit-results.json | jq -r '.metadata.vulnerabilities.high // 0')
+          CRITICAL_VULNS=$(cat audit-results.json | jq -r '.metadata.vulnerabilities.critical // 0')
+          
+          echo "High severity vulnerabilities: $HIGH_VULNS"
+          echo "Critical severity vulnerabilities: $CRITICAL_VULNS"
+          
+          if [ "$HIGH_VULNS" -gt 0 ] || [ "$CRITICAL_VULNS" -gt 0 ]; then
+            echo "❌ High or critical vulnerabilities found!"
+            echo "Please run 'npm audit fix' to resolve security issues."
+            exit 1
+          else
+            echo "✅ No high or critical vulnerabilities found."
+          fi
+
+  license-scan:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install license checker
+        run: npm install -g license-checker
+        
+      - name: Check licenses
+        run: |
+          echo "Checking package licenses..."
+          license-checker --json > licenses.json
+          
+          # Check for problematic licenses (adjust list as needed)
+          PROBLEMATIC_LICENSES="GPL-1.0,GPL-2.0,GPL-3.0,AGPL-1.0,AGPL-3.0"
+          
+          echo "Scanning for problematic licenses: $PROBLEMATIC_LICENSES"
+          
+          if license-checker --excludePrivatePackages --restrict "$PROBLEMATIC_LICENSES"; then
+            echo "✅ No problematic licenses found."
+          else
+            echo "❌ Problematic licenses detected!"
+            echo "Please review the licenses and ensure compliance."
+            exit 1
+          fi
+          
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: licenses.json
+          retention-days: 30
+
+  outdated-packages:
+    name: Check Outdated Packages
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Check for outdated packages
+        run: |
+          echo "Checking for outdated packages..."
+          npm outdated --json > outdated.json || true
+          
+          # Display results
+          if [ -s outdated.json ]; then
+            echo "📦 Outdated packages found:"
+            cat outdated.json | jq -r 'to_entries[] | "\(.key): \(.value.current) → \(.value.latest)"'
+            
+            # Count major version updates
+            MAJOR_UPDATES=$(cat outdated.json | jq 'to_entries | map(select(.value.type == "major")) | length')
+            echo "Major version updates available: $MAJOR_UPDATES"
+            
+            if [ "$MAJOR_UPDATES" -gt 5 ]; then
+              echo "⚠️  Many major updates available. Consider updating dependencies."
+            fi
+          else
+            echo "✅ All packages are up to date."
+          fi
+          
+      - name: Upload outdated packages report
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-packages-report
+          path: outdated.json
+          retention-days: 30
+
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+        
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, LGPL-2.0-only, LGPL-2.1-only, LGPL-3.0-only, LGPL-3.0-or-later, MPL-2.0, LicenseRef-scancode-alliance-open-media-patent-1.0

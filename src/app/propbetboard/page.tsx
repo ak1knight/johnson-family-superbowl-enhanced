@@ -1,33 +1,29 @@
 'use client'
 
-import React, { useState } from 'react'
-import Card from '../components/card';
-import PropBetBoardTable from '../components/propbetboardtable';
-import ThemeDropdown from '../components/themedropdown';
-
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const PropBetBoard = () => {
-    const [year, setYear] = useState(2025);
+    const router = useRouter();
 
-    return <div className='container m-auto'>
-    <div className="bg-primary text-base-100 h-72 relative rounded-b-lg mb-2">
-        <div className="container m-auto h-full flex items-center p-8">
-            <h1 className="text-9xl">Prop Bet Big Board</h1>
-            <ThemeDropdown />
-        </div>
-    </div>
-    <div className="container">
-        <ul role="tablist" className="tabs tabs-boxed mb-2">
-                {[2020, 2021, 2022, 2023, 2024, 2025].map(y => <a role='tab' key={y} className={`tab ${y === year ? 'tab-active' : ''}`} href="#" onClick={() => setYear(y)}>{y}</a>)}
-            </ul>
-            <Card>
-                <div className="table-responsive">
-                    <PropBetBoardTable year={year} />
+    useEffect(() => {
+        // Redirect to the unified dashboard
+        router.push('/big_board');
+    }, [router]);
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-neutral via-base-100 to-neutral/50 flex items-center justify-center">
+            <div className="card bg-base-100 shadow-xl">
+                <div className="card-body text-center">
+                    <h2 className="card-title justify-center">Redirecting...</h2>
+                    <p>Taking you to the unified Results Dashboard</p>
+                    <div className="flex justify-center mt-4">
+                        <span className="loading loading-spinner loading-lg text-primary"></span>
+                    </div>
                 </div>
-            </Card>
+            </div>
         </div>
-    </div>
-}
-
+    );
+};
 
 export default PropBetBoard

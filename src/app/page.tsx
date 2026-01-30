@@ -1,44 +1,168 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import EntryForm from "./components/entryform"
-import { questions } from "../data/formdata";
+import HeroSection from "./components/HeroSection"
+import FormProgress from "./components/FormProgress"
+import { questions, getLatestAvailableYear } from "../data/formdata";
 import { FormContext, FormStore } from '@/data/form-context';
-import ThemeDropdown from './components/themedropdown';
+import { observer } from 'mobx-react';
 
+// Get the latest year with available data
+const CURRENT_YEAR = parseInt(getLatestAvailableYear(), 10);
 
+const HomeContent = observer(() => {
+    const [year] = useState(CURRENT_YEAR);
+    const formStore = React.useContext(FormContext);
 
-const Home = () => {
-    const [year, ] = useState(2025);
+    // Define form sections for progress tracking
+    const sectionNames = useMemo(() => [
+        'Team Scores',
+        'Yardage Predictions',
+        ...questions[year].map(q => q.question.length > 30 ? q.question.substring(0, 30) + '...' : q.question),
+        'Personal Information'
+    ], [year]);
 
-    return <div className='container m-auto'>
-        <div className="bg-primary text-base-100 h-72 relative rounded-b-lg mb-2">
-            <div className="container m-auto h-full flex items-center p-8">
-                <h1 className="text-9xl">Entry Form</h1>
-                <ThemeDropdown />
-            </div>
-        </div>
-        <FormContext.Provider value={new FormStore(year.toString())}>
-            <EntryForm year={year} questions={questions[year]} />
-        </FormContext.Provider>
+    // Track completed sections based on form data
+    // MobX observer handles reactivity, so no need for useMemo
+    const getCompletedSections = () => {
+        const completed = [];
+        
+        // Check if scores are filled (all 4 quarters for both teams)
+        const team1Complete = formStore.team1Scores.every(s => s != null);
+        const team2Complete = formStore.team2Scores.every(s => s != null);
+        const tiebreakerComplete = formStore.tiebreakers.slice(0, 3).every(t => t != null);
+        if (team1Complete && team2Complete && tiebreakerComplete) {
+            completed.push('Team Scores');
+        }
+        
+        // Check if tiebreakers are filled (first 3 quarters required)
+        const yardageComplete = formStore.team1Yards != null && formStore.team2Yards != null;
+        if (yardageComplete) {
+            completed.push('Yardage Predictions');
+        }
+        
+        // Check individual questions
+        questions[year].forEach((q, index) => {
+            if (formStore.questionAnswers[index]?.trim()) {
+                const sectionName = q.question.length > 30 ? q.question.substring(0, 30) + '...' : q.question;
+                completed.push(sectionName);
+            }
+        });
+        
+        // Check if name is filled
+        if (formStore.name.trim()) {
+            completed.push('Personal Information');
+        }
+        
+        return completed;
+    };
 
-        <div className="container mt-3">
-            {/* <Scrollspy sectionRefs={sectionRefs} >
-                {({ currentElementIndexInViewport, elementsStatusInViewport }) => (<div className="row">
-                    <div className="col-3-sm">
-                        <div id="form-sidebar" className="d-none d-md-flex flex-column list-group" style={{position: "sticky", top: "10px"}}>
-                            {titleQs.map((q, i) => (
-                                <a className={`list-group-item list-group-item-action ${ currentElementIndexInViewport === i && elementsStatusInViewport[i] ? "active" : "" }`} key={i} href={`#${q.short.toLowerCase().replace(/( |\W)/g, '')}`}>{q.short} {elementsStatusInViewport[i]}</a>
-                            ))}
+    const completedSections = getCompletedSections();
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-neutral via-base-100 to-neutral/50">
+            {/* Enhanced Hero Section */}
+            <HeroSection year={year} />
+
+            {/* Main Content Container */}
+            <div className="container mx-auto px-4 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Desktop Sidebar - Progress Indicator */}
+                    <div className="lg:col-span-3 order-2 lg:order-1">
+                        <div className="hidden lg:block sticky top-4 h-fit">
+                            <FormProgress
+                                totalSteps={sectionNames.length}
+                                completedSections={completedSections}
+                                sectionNames={sectionNames}
+                            />
                         </div>
                     </div>
-                    <div className="col-sm">
-                        <EntryForm year={year} questions={questions[year]} sectionRefs={sectionRefs} />
+
+                    {/* Main Form Content */}
+                    <div className="lg:col-span-9 order-1 lg:order-2">
+                        {/* Mobile Progress Indicator - Sticky */}
+                        <div className="lg:hidden mb-6 sticky top-0 z-50">
+                            <div className="bg-base-100/95 backdrop-blur-md rounded-2xl p-4 border border-base-300/50 shadow-lg mx-2">
+                                <div className="flex justify-between items-center mb-3">
+                                    <h3 className="font-semibold">Progress</h3>
+                                    <span className="text-sm text-base-content/70">
+                                        {completedSections.length}/{sectionNames.length}
+                                    </span>
+                                </div>
+                                <div className="w-full bg-base-300 rounded-full h-2.5">
+                                    <div
+                                        className="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-500 relative overflow-hidden"
+                                        style={{ width: `${(completedSections.length / sectionNames.length) * 100}%` }}
+                                    >
+                                        {/* Animated shimmer effect for mobile too */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 animate-shimmer"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Form Content */}
+                        <div className="space-y-6">
+                            <EntryForm year={year} questions={questions[year]} />
+                        </div>
                     </div>
-                </div>)}
-            </Scrollspy> */}
+                </div>
+            </div>
+
+            {/* Add shimmer animation for mobile progress */}
+            <style jsx>{`
+                @keyframes shimmer {
+                    0% { transform: translateX(-100%) skewX(-12deg); }
+                    100% { transform: translateX(200%) skewX(-12deg); }
+                }
+                
+                .animate-shimmer {
+                    animation: shimmer 2s infinite;
+                }
+            `}</style>
+
+            {/* Footer with helpful tips */}
+            <footer className="bg-base-200/50 backdrop-blur-sm border-t border-base-300/50 mt-16">
+                <div className="container mx-auto px-4 py-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div>
+                            <div className="text-2xl mb-2">🏈</div>
+                            <h4 className="font-semibold mb-2">Make Your Predictions</h4>
+                            <p className="text-sm text-base-content/70">
+                                Predict quarter scores, yardage, and answer prop bet questions
+                            </p>
+                        </div>
+                        <div>
+                            <div className="text-2xl mb-2">🎯</div>
+                            <h4 className="font-semibold mb-2">Track Your Progress</h4>
+                            <p className="text-sm text-base-content/70">
+                                Use the progress indicator to see which sections you've completed
+                            </p>
+                        </div>
+                        <div>
+                            <div className="text-2xl mb-2">🏆</div>
+                            <h4 className="font-semibold mb-2">Win Prizes</h4>
+                            <p className="text-sm text-base-content/70">
+                                See how you rank against family members on the Big Board
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
-    </div>
-}
+    );
+});
+
+const Home = () => {
+    const [year] = useState(CURRENT_YEAR);
+    const formStore = useMemo(() => new FormStore(year.toString()), [year]);
+
+    return (
+        <FormContext.Provider value={formStore}>
+            <HomeContent />
+        </FormContext.Provider>
+    );
+};
 
 export default Home
