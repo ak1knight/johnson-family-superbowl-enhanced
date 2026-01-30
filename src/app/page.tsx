@@ -8,8 +8,11 @@ import { questions } from "../data/formdata";
 import { FormContext, FormStore } from '@/data/form-context';
 import { observer } from 'mobx-react';
 
+// Single source of truth for the current year
+const CURRENT_YEAR = 2026;
+
 const HomeContent = observer(() => {
-    const [year] = useState(2026);
+    const [year] = useState(CURRENT_YEAR);
     const [currentStep] = useState(0);
     const formStore = React.useContext(FormContext);
 
@@ -159,7 +162,7 @@ const HomeContent = observer(() => {
 });
 
 const Home = () => {
-    const [year] = useState(2026);
+    const [year] = useState(CURRENT_YEAR);
     const formStore = useMemo(() => new FormStore(year.toString()), [year]);
 
     return (
