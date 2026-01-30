@@ -10,19 +10,12 @@ const BASE_YEAR = 2019; // Base year for calculating winning entry IDs
 // Database client singleton with promise-based initialization to prevent race conditions
 let dynamoClient: DynamoDBDocument | null = null;
 let clientInitializationPromise: Promise<DynamoDBDocument> | null = null;
-let lastInitializationError: Error | null = null;
 
 // Async version that handles concurrent initialization safely
 const getDynamoDBClientAsync = async (): Promise<DynamoDBDocument> => {
     // Return immediately if client is already initialized
     if (dynamoClient) {
         return dynamoClient;
-    }
-
-    // If there was a previous initialization error, clear it before retrying
-    // This allows retry attempts after transient failures
-    if (lastInitializationError) {
-        lastInitializationError = null;
     }
 
     // If initialization is already in progress, wait for it to complete
@@ -46,10 +39,6 @@ const getDynamoDBClientAsync = async (): Promise<DynamoDBDocument> => {
 
             dynamoClient = DynamoDBDocument.from(client);
             return dynamoClient;
-        } catch (error) {
-            // Cache the error for potential inspection
-            lastInitializationError = error instanceof Error ? error : new Error('Unknown initialization error');
-            throw lastInitializationError;
         } finally {
             // Clear the promise after initialization completes (success or failure)
             // This allows retry on next call if initialization failed
@@ -57,7 +46,7 @@ const getDynamoDBClientAsync = async (): Promise<DynamoDBDocument> => {
         }
     })();
 
-    return await clientInitializationPromise;
+    return clientInitializationPromise;
 };
 
 // Helper function to calculate winning entry ID consistently
