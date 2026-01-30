@@ -226,10 +226,10 @@ export class FormStore {
             const entry = {
                 [homeTeam.name as TeamName]: this.generateTeamScore(TEAM_INDEX.HOME),
                 [awayTeam.name as TeamName]: this.generateTeamScore(TEAM_INDEX.AWAY),
-                "Quarter 1": { tiebreaker: this.tiebreakers[QUARTERS.FIRST] || 0 },
-                "Quarter 2": { tiebreaker: this.tiebreakers[QUARTERS.SECOND] || 0 },
-                "Quarter 3": { tiebreaker: this.tiebreakers[QUARTERS.THIRD] || 0 },
-                "Final": { tiebreaker: this.tiebreakers[QUARTERS.FINAL] || 0 },
+                "Quarter 1": { tiebreaker: this.tiebreakers[QUARTERS.FIRST] ?? 0 },
+                "Quarter 2": { tiebreaker: this.tiebreakers[QUARTERS.SECOND] ?? 0 },
+                "Quarter 3": { tiebreaker: this.tiebreakers[QUARTERS.THIRD] ?? 0 },
+                "Final": { tiebreaker: this.tiebreakers[QUARTERS.FINAL] ?? 0 },
                 name: this.name,
                 ...this.questionAnswers.map(a => ({response: a}))
             };

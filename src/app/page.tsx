@@ -24,7 +24,8 @@ const HomeContent = observer(() => {
     ], [year]);
 
     // Track completed sections based on form data
-    const completedSections = useMemo(() => {
+    // MobX observer handles reactivity, so no need for useMemo
+    const getCompletedSections = () => {
         const completed = [];
         
         // Check if scores are filled (all 4 quarters for both teams)
@@ -55,7 +56,9 @@ const HomeContent = observer(() => {
         }
         
         return completed;
-    }, [formStore, year]);
+    };
+
+    const completedSections = getCompletedSections();
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral via-base-100 to-neutral/50">
