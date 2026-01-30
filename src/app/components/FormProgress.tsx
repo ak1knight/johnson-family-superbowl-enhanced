@@ -1,26 +1,22 @@
 'use client'
 
 import React, { useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
 
 interface FormProgressProps {
-  currentStep: number;
   totalSteps: number;
   completedSections: string[];
   sectionNames: string[];
 }
 
-const FormProgress = ({ currentStep, totalSteps, completedSections, sectionNames }: FormProgressProps) => {
+const FormProgress = ({ totalSteps, completedSections, sectionNames }: FormProgressProps) => {
   useTheme();
   
   const progressPercentage = useMemo(() => {
     return Math.round((completedSections.length / totalSteps) * 100);
   }, [completedSections.length, totalSteps]);
 
-  const getStepStatus = (index: number, sectionName: string) => {
+  const getStepStatus = (sectionName: string) => {
     if (completedSections.includes(sectionName)) return 'completed';
-    if (index === currentStep) return 'current';
-    if (index < currentStep) return 'passed';
     return 'upcoming';
   };
 
@@ -55,31 +51,23 @@ const FormProgress = ({ currentStep, totalSteps, completedSections, sectionNames
       {/* Section Steps */}
       <div className="space-y-2">
         {sectionNames.map((sectionName, index) => {
-          const status = getStepStatus(index, sectionName);
+          const status = getStepStatus(sectionName);
           
           return (
             <div 
               key={sectionName}
-              className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-200 ${
-                status === 'current' ? 'bg-primary/10 border border-primary/20' : ''
-              }`}
+              className="flex items-center gap-3 p-2 rounded-lg transition-all duration-200"
             >
               {/* Step Icon */}
               <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${
                 status === 'completed' 
                   ? 'bg-success text-success-content' 
-                  : status === 'current'
-                  ? 'bg-primary text-primary-content animate-pulse'
-                  : status === 'passed'
-                  ? 'bg-warning text-warning-content'
                   : 'bg-base-300 text-base-content/60'
               }`}>
                 {status === 'completed' ? (
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                ) : status === 'current' ? (
-                  <div className="w-2 h-2 bg-current rounded-full animate-ping"></div>
                 ) : (
                   <span className="text-xs font-medium">{index + 1}</span>
                 )}
@@ -89,10 +77,6 @@ const FormProgress = ({ currentStep, totalSteps, completedSections, sectionNames
               <span className={`text-sm transition-colors duration-200 ${
                 status === 'completed' 
                   ? 'text-success font-medium' 
-                  : status === 'current'
-                  ? 'text-primary font-medium'
-                  : status === 'passed'
-                  ? 'text-base-content'
                   : 'text-base-content/60'
               }`}>
                 {sectionName}
