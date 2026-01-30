@@ -13,7 +13,7 @@ const CURRENT_YEAR = 2026;
 
 const HomeContent = observer(() => {
     const [year] = useState(CURRENT_YEAR);
-    const [currentStep, setCurrentStep] = useState(0);
+    const [currentStep] = useState(0);
     const formStore = React.useContext(FormContext);
 
     // Define form sections for progress tracking

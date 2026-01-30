@@ -1,10 +1,8 @@
 import React, { useContext, useMemo, useCallback } from "react"
-import Card from "./card"
 import { FormContext, TEAM_INDEX } from "@/data/form-context";
 import { observer } from "mobx-react";
-import { useDebouncedCallback, usePerformanceMonitor, memoizeWithLRU } from "../../utils/performance";
+import { usePerformanceMonitor, memoizeWithLRU } from "../../utils/performance";
 
-const extrainfo = ''
 
 // Memoized helper function to parse yards input with validation
 const parseYards = memoizeWithLRU((value: string): number => {

@@ -77,6 +77,7 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
                         setWinningEntry(existing);
                     }
                 }
+            //eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (error) {
                 console.log('No existing winning entry found');
             }
@@ -134,7 +135,7 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
         };
 
         // Convert team scores and tiebreakers to expected format
-        teams[year].forEach((team, index) => {
+        teams[year].forEach((team, _index) => {
             converted[team.name] = {
                 yards: liveEntry[team.name]?.yards || 0
             };
@@ -156,7 +157,7 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
         });
 
         // Convert tiebreakers to expected format
-        periodNames.forEach((period, index) => {
+        periodNames.forEach((period, _index) => {
             const quarterKey = period === 'Quarter 1' ? 'quarter1'
                 : period === 'Quarter 2' ? 'quarter2'
                 : period === 'Quarter 3' ? 'quarter3'
@@ -203,7 +204,7 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
             };
 
             // Copy question answers from the existing entry
-            questions.forEach((q, index) => {
+            questions.forEach((_q, index) => {
                 if (existingData[index]?.response) {
                     baseEntry.questionAnswers = baseEntry.questionAnswers || {};
                     baseEntry.questionAnswers[index] = existingData[index].response as string;
@@ -465,7 +466,7 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
         return (
             <Card title={`${displayName} Results`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    {teams[year].map((team, index) => (
+                    {teams[year].map((team, _index) => (
                         <div key={team.name}>
                             <label className="label">
                                 <span className="label-text font-medium">{team.name} Score</span>
@@ -503,7 +504,7 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
                 <div>
                     <h3 className="text-lg font-semibold mb-3">Final Scores</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                        {teams[year].map((team, index) => (
+                        {teams[year].map((team, _index) => (
                             <div key={team.name}>
                                 <label className="label">
                                     <span className="label-text font-medium">{team.name} Final Score</span>
@@ -536,7 +537,7 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
                 <div>
                     <h3 className="text-lg font-semibold mb-3">Total Yards</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                        {teams[year].map((team, index) => (
+                        {teams[year].map((team, _index) => (
                             <div key={team.name}>
                                 <label className="label">
                                     <span className="label-text font-medium">{team.name} Total Yards</span>

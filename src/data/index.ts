@@ -7,27 +7,46 @@ const SUPERBOWL_ENTRIES_TABLE = "SuperBowlEntries";
 const WINNING_ENTRY_TABLE = "WinningEntry";
 const BASE_YEAR = 2019; // Base year for calculating winning entry IDs
 
-// Database client singleton
+// Database client singleton with promise-based initialization to prevent race conditions
 let dynamoClient: DynamoDBDocument | null = null;
+let clientInitializationPromise: Promise<DynamoDBDocument> | null = null;
 
-const getDynamoDBClient = (): DynamoDBDocument => {
+// Async version that handles concurrent initialization safely
+const getDynamoDBClientAsync = async (): Promise<DynamoDBDocument> => {
+    // Return immediately if client is already initialized
     if (dynamoClient) {
         return dynamoClient;
     }
 
-    const options: DynamoDBClientConfig = {
-        region: DYNAMODB_REGION,
-    };
+    // If initialization is already in progress, wait for it to complete
+    if (clientInitializationPromise) {
+        return clientInitializationPromise;
+    }
 
-    const client = process.env.LOCAL_DYNAMO_DB_ENDPOINT
-        ? new DynamoDBClient({
-            ...options,
-            endpoint: process.env.LOCAL_DYNAMO_DB_ENDPOINT
-        })
-        : new DynamoDBClient(options);
+    // Start initialization
+    clientInitializationPromise = (async () => {
+        try {
+            const options: DynamoDBClientConfig = {
+                region: DYNAMODB_REGION,
+            };
 
-    dynamoClient = DynamoDBDocument.from(client);
-    return dynamoClient;
+            const client = process.env.LOCAL_DYNAMO_DB_ENDPOINT
+                ? new DynamoDBClient({
+                    ...options,
+                    endpoint: process.env.LOCAL_DYNAMO_DB_ENDPOINT
+                })
+                : new DynamoDBClient(options);
+
+            dynamoClient = DynamoDBDocument.from(client);
+            return dynamoClient;
+        } finally {
+            // Clear the promise after initialization completes (success or failure)
+            // This allows retry on next call if initialization failed
+            clientInitializationPromise = null;
+        }
+    })();
+
+    return clientInitializationPromise;
 };
 
 // Helper function to calculate winning entry ID consistently
@@ -54,7 +73,8 @@ const apiCalls = {
         try {
             validateYear(year);
             
-            const { Items = [] } = await getDynamoDBClient()
+            const client = await getDynamoDBClientAsync();
+            const { Items = [] } = await client
                 .send(new ScanCommand({
                     TableName: SUPERBOWL_ENTRIES_TABLE,
                     FilterExpression: "yearKey = :y",
@@ -73,7 +93,8 @@ const apiCalls = {
         try {
             validateEntryId(entryId);
             
-            const result = await getDynamoDBClient()
+            const client = await getDynamoDBClientAsync();
+            const result = await client
                 .send(new GetCommand({
                     TableName: SUPERBOWL_ENTRIES_TABLE,
                     Key: {
@@ -95,7 +116,7 @@ const apiCalls = {
                 throw new Error('Entry data is required for update');
             }
 
-            const client = getDynamoDBClient();
+            const client = await getDynamoDBClientAsync();
             await client.send(new UpdateCommand({
                 TableName: SUPERBOWL_ENTRIES_TABLE,
                 Key: {
@@ -121,7 +142,8 @@ const apiCalls = {
             }
 
             const entryId = Date.now();
-            await getDynamoDBClient().send(new PutCommand({
+            const client = await getDynamoDBClientAsync();
+            await client.send(new PutCommand({
                 TableName: SUPERBOWL_ENTRIES_TABLE,
                 Item: {
                     id: entryId,
@@ -146,7 +168,7 @@ const apiCalls = {
                 throw new Error('Winning entry data is required');
             }
 
-            const client = getDynamoDBClient();
+            const client = await getDynamoDBClientAsync();
             await client.send(new UpdateCommand({
                 TableName: WINNING_ENTRY_TABLE,
                 Key: {
@@ -167,7 +189,8 @@ const apiCalls = {
         try {
             validateYear(year);
             
-            const { Item } = await getDynamoDBClient()
+            const client = await getDynamoDBClientAsync();
+            const { Item } = await client
                 .send(new GetCommand({
                     TableName: WINNING_ENTRY_TABLE,
                     Key: {
