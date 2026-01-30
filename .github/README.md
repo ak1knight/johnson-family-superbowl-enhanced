@@ -66,9 +66,10 @@ The CI/CD pipeline consists of three main workflows:
 Configure the following secrets in your GitHub repository (`Settings > Secrets and variables > Actions`):
 
 ```
-AWS_ACCESS_KEY_ID       # AWS access key for deployment
-AWS_SECRET_ACCESS_KEY   # AWS secret key for deployment
+AWS_ROLE_ARN           # AWS IAM role ARN for OIDC authentication
 ```
+
+**Note:** This configuration uses AWS OIDC (OpenID Connect) authentication, which is more secure than storing long-term AWS access keys.
 
 ### 2. Repository Variables
 
@@ -98,12 +99,47 @@ Set up GitHub environments for deployment protection:
 
 1. **AWS Account**: Ensure you have an AWS account set up
 2. **SST Configuration**: Verify [`sst.config.ts`](sst.config.ts) is properly configured
-3. **IAM Permissions**: The AWS credentials must have permissions for:
+3. **OIDC Setup**: Configure AWS OIDC identity provider and IAM role (see below)
+
+### Setting up AWS OIDC Authentication
+
+1. **Create OIDC Identity Provider** in AWS IAM:
+   - Provider Type: OpenID Connect
+   - Provider URL: `https://token.actions.githubusercontent.com`
+   - Audience: `sts.amazonaws.com`
+
+2. **Create IAM Role** with the following trust policy:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": {
+           "Federated": "arn:aws:iam::YOUR_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+         },
+         "Action": "sts:AssumeRoleWithWebIdentity",
+         "Condition": {
+           "StringEquals": {
+             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+           },
+           "StringLike": {
+             "token.actions.githubusercontent.com:sub": "repo:YOUR_GITHUB_USERNAME/johnson-family-superbowl-enhanced:*"
+           }
+         }
+       }
+     ]
+   }
+   ```
+
+3. **Attach IAM Policies** to the role with permissions for:
    - CloudFormation stack management
    - Lambda function deployment
    - DynamoDB table access
    - S3 bucket access (for static assets)
    - Other services used by your SST application
+
+4. **Copy the Role ARN** and add it to your GitHub repository secrets as `AWS_ROLE_ARN`
 
 ### SST Deployment
 
@@ -167,9 +203,11 @@ Monitor workflow runs in the `Actions` tab:
    - Test local build: `npm run build`
 
 2. **Deployment Failures**
-   - Verify AWS credentials are configured
+   - Verify AWS OIDC role ARN is configured in GitHub secrets
+   - Check that AWS OIDC identity provider is set up correctly
+   - Ensure the IAM role has sufficient permissions
+   - Verify the trust policy allows your GitHub repository
    - Check SST configuration in [`sst.config.ts`](sst.config.ts)
-   - Ensure AWS permissions are sufficient
 
 3. **Security Scan Failures**
    - High/critical vulnerabilities: Run `npm audit fix`
