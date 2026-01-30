@@ -174,24 +174,14 @@ export const getAvailableYears = memoizeWithLRU((): string[] => {
     return Object.keys(teams).sort();
 }, 1, () => 'available-years');
 
-export const getCurrentYear = memoizeWithLRU((): string => {
+export const getCurrentYear = (): string => {
     return new Date().getFullYear().toString();
-}, 1, () => `current-year-${Math.floor(Date.now() / (1000 * 60 * 60))}`); // Cache for 1 hour
+};
 
 export const getLatestAvailableYear = memoizeWithLRU((): string => {
     const years = getAvailableYears();
     return years[years.length - 1];
 }, 1, () => 'latest-available-year');
-
-// Lazy loading utility for large question sets
-export const getQuestionsLazy = memoizeWithLRU((year: string): Promise<Question[]> => {
-    return new Promise((resolve) => {
-        // Simulate lazy loading - in a real app, this might be an API call
-        setTimeout(() => {
-            resolve(getQuestionsForYear(year));
-        }, 0);
-    });
-}, 20, (year) => `lazy-questions-${year}`);
 
 // Performance optimized question filtering
 export const getQuestionsByType = memoizeWithLRU((year: string, hasOptions: boolean): Question[] => {

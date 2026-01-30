@@ -1,6 +1,6 @@
 import { makeAutoObservable, computed } from "mobx"
 import { createContext } from "react"
-import { Entry, TeamName, TeamScore, PeriodName, getHomeTeam, getAwayTeam, isValidYear } from "./formdata";
+import { Entry, TeamName, TeamScore, getHomeTeam, getAwayTeam, isValidYear } from "./formdata";
 
 // Constants for better type safety
 export const QUARTERS = {

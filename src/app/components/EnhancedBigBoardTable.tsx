@@ -106,12 +106,12 @@ const BigBoardTable = ({ year, onEntriesLoad }: BigBoardTableProps) => {
         }
 
         periodNames.forEach(period => {
-            if (!!winningEntry?.entry?.[teams[year][0].name]?.[period as keyof TeamScore] && !!winningEntry.entry[teams[year][1].name]?.[period as keyof TeamScore] && entries) {
+            if (!!winningEntry?.entry?.[teams[year][0].name]?.[period as keyof TeamScore] && !!winningEntry.entry[teams[year][1].name]?.[period as keyof TeamScore]) {
                 wn[period] = Math.min(...entries.map((e) => (!!e.entry[teams[year][0].name]?.[period] && !!e.entry[teams[year][1].name]?.[period] && Math.abs(e.entry[teams[year][0].name]![period].score - winningEntry.entry[teams[year][0].name]![period].score) + Math.abs(e.entry[teams[year][1].name]![period].score - winningEntry.entry[teams[year][1].name]![period].score)) || Infinity));
             }
         });
 
-        if (!!winningEntry.entry[teams[year][0].name] && !!winningEntry.entry[teams[year][0].name]!["Final"] && !!winningEntry.entry[teams[year][0].name]!["Final"].score && entries) {
+        if (!!winningEntry.entry[teams[year][0].name] && !!winningEntry.entry[teams[year][0].name]!["Final"] && !!winningEntry.entry[teams[year][0].name]!["Final"].score) {
             const differences = entries.map((e) => (!!e.entry[teams[year][0].name]?.["Final"] && !!e.entry[teams[year][1].name]?.["Final"] && Math.abs(e.entry[teams[year][0].name]!["Final"].score - winningEntry.entry[teams[year][0].name]!["Final"].score) + Math.abs(e.entry[teams[year][1].name]!["Final"].score - winningEntry.entry[teams[year][1].name]!["Final"].score)) || Infinity);
             const first = Math.min(...differences);
             const second = Math.min(...differences.filter(d => d > first));
@@ -286,7 +286,7 @@ const BigBoardTable = ({ year, onEntriesLoad }: BigBoardTableProps) => {
                                 </td>
                             </tr>
                         ) : entries && entries.length > 0 ? (
-                            sortedEntries.map((e, index) => {
+                            sortedEntries.map((e) => {
                                 const finalPlace = checkFinalScore(e.entry);
                                 const isWinner = finalPlace !== false && finalPlace > -1;
 

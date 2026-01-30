@@ -9,6 +9,8 @@ interface FormProgressProps {
 }
 
 const FormProgress = ({ totalSteps, completedSections, sectionNames }: FormProgressProps) => {
+  useTheme();
+  
   const progressPercentage = useMemo(() => {
     return Math.round((completedSections.length / totalSteps) * 100);
   }, [completedSections.length, totalSteps]);

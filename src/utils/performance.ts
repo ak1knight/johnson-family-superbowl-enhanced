@@ -279,6 +279,13 @@ export class LRUCache<K, V> {
 }
 
 /**
+ * Wrapper to distinguish "not cached" from "cached undefined"
+ */
+interface CacheEntry<T> {
+    value: T;
+}
+
+/**
  * Memoize function with LRU cache
  */
 export function memoizeWithLRU<T extends (...args: any[]) => any>(
@@ -286,19 +293,18 @@ export function memoizeWithLRU<T extends (...args: any[]) => any>(
     maxSize: number = 100,
     getKey?: (...args: Parameters<T>) => string
 ): T {
-    const cache = new LRUCache<string, ReturnType<T>>(maxSize);
+    const cache = new LRUCache<string, CacheEntry<ReturnType<T>>>(maxSize);
     
     return ((...args: Parameters<T>): ReturnType<T> => {
         const key = getKey ? getKey(...args) : JSON.stringify(args);
         
-        let result = cache.get(key);
-        if (result === undefined) {
-            result = fn(...args) as ReturnType<T>;
-            if (result !== undefined) {
-                cache.set(key, result);
-            }
+        const cached = cache.get(key);
+        if (cached === undefined) {
+            const result = fn(...args) as ReturnType<T>;
+            cache.set(key, { value: result });
+            return result;
         }
         
-        return result as ReturnType<T>;
+        return cached.value;
     }) as T;
 }
