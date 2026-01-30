@@ -97,10 +97,15 @@ export function useDebounce<T>(value: T, delay: number): T {
  */
 export function useDebouncedCallback<T extends (...args: any[]) => any>(
     callback: T,
-    delay: number,
-    deps: React.DependencyList = []
+    delay: number
 ): T & { cancel: () => void } {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const callbackRef = useRef(callback);
+
+    // Keep callback ref up to date
+    useEffect(() => {
+        callbackRef.current = callback;
+    }, [callback]);
 
     const debouncedCallback = useCallback(
         (...args: Parameters<T>) => {
@@ -109,11 +114,10 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
             }
 
             timeoutRef.current = setTimeout(() => {
-                callback(...args);
+                callbackRef.current(...args);
             }, delay);
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [callback, delay, ...deps]
+        [delay]
     ) as T & { cancel: () => void };
 
     debouncedCallback.cancel = useCallback(() => {
@@ -206,7 +210,7 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
             renderCount.current++;
             startTime.current = performance.now();
         }
-    });
+    }, [enabled]);
 
     useEffect(() => {
         if (enabled) {
@@ -219,7 +223,7 @@ export function usePerformanceMonitor(componentName: string, enabled: boolean = 
                 );
             }
         }
-    });
+    }, [enabled, componentName]);
 
     return {
         renderCount: renderCount.current,

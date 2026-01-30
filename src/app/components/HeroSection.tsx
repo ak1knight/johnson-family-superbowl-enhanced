@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import NFLThemeDropdown from './NFLThemeDropdown';
 import { useTheme } from '../../contexts/ThemeContext';
+import { superBowlDates } from '../../data/formdata';
 
 interface HeroSectionProps {
   year: number;
@@ -17,9 +18,11 @@ const HeroSection = ({ year }: HeroSectionProps) => {
     seconds: number;
   } | null>(null);
 
-  // Super Bowl is typically the first Sunday in February
-  // This is a placeholder - you'd want to set the actual date
-  const superBowlDate = new Date(`February 9, ${year} 18:30:00 EST`);
+  // Get Super Bowl date from configuration, fallback to first Sunday in February
+  const superBowlDate = useMemo(() => {
+    const superBowlDateString = superBowlDates[year.toString()] || `February 9, ${year}`;
+    return new Date(`${superBowlDateString} 18:30:00 EST`);
+  }, [year]);
 
   useEffect(() => {
     const timer = setInterval(() => {

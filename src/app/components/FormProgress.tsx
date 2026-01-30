@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface FormProgressProps {
   totalSteps: number;

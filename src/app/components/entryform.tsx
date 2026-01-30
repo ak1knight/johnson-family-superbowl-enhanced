@@ -52,7 +52,7 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
             delete newErrors[errorKey];
             setValidationErrors(newErrors);
         }
-    }, 150, [validationErrors]);
+    }, 150);
 
     // Debounced form validation for real-time feedback
 

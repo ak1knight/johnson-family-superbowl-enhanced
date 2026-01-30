@@ -23,27 +23,22 @@ const getDynamoDBClientAsync = async (): Promise<DynamoDBDocument> => {
         return clientInitializationPromise;
     }
 
-    // Start initialization
-    clientInitializationPromise = (async () => {
-        try {
-            const options: DynamoDBClientConfig = {
-                region: DYNAMODB_REGION,
-            };
+    // Start initialization - assign promise before starting async work to prevent race condition
+    clientInitializationPromise = (async (): Promise<DynamoDBDocument> => {
+        const options: DynamoDBClientConfig = {
+            region: DYNAMODB_REGION,
+        };
 
-            const client = process.env.LOCAL_DYNAMO_DB_ENDPOINT
-                ? new DynamoDBClient({
-                    ...options,
-                    endpoint: process.env.LOCAL_DYNAMO_DB_ENDPOINT
-                })
-                : new DynamoDBClient(options);
+        const client = process.env.LOCAL_DYNAMO_DB_ENDPOINT
+            ? new DynamoDBClient({
+                ...options,
+                endpoint: process.env.LOCAL_DYNAMO_DB_ENDPOINT
+            })
+            : new DynamoDBClient(options);
 
-            dynamoClient = DynamoDBDocument.from(client);
-            return dynamoClient;
-        } finally {
-            // Clear the promise after initialization completes (success or failure)
-            // This allows retry on next call if initialization failed
-            clientInitializationPromise = null;
-        }
+        dynamoClient = DynamoDBDocument.from(client);
+        clientInitializationPromise = null; // Clear after successful initialization
+        return dynamoClient;
     })();
 
     return clientInitializationPromise;

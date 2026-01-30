@@ -109,7 +109,7 @@ export class FormStore {
         const scores = teamIndex === TEAM_INDEX.HOME ? this.team1Scores : this.team2Scores;
         const teamName = teamIndex === TEAM_INDEX.HOME ? "Team 1" : "Team 2";
         
-        if (scores.some(s => s === undefined)) {
+        if (scores.some(s => s == null)) {
             return `All quarter scores are required for ${teamName}`;
         }
         return null;
@@ -117,7 +117,7 @@ export class FormStore {
 
     validateTiebreakers(): string | null {
         // Only first 3 tiebreakers are required (Final is optional)
-        if (this.tiebreakers.slice(0, 3).some(t => t === undefined)) {
+        if (this.tiebreakers.slice(0, 3).some(t => t == null)) {
             return "Tiebreakers for quarters 1-3 are required";
         }
         return null;
@@ -207,11 +207,11 @@ export class FormStore {
         const yards = teamIndex === TEAM_INDEX.HOME ? this.team1Yards : this.team2Yards;
         
         return {
-            "Quarter 1": { score: scores[QUARTERS.FIRST] || 0 },
-            "Quarter 2": { score: scores[QUARTERS.SECOND] || 0 },
-            "Quarter 3": { score: scores[QUARTERS.THIRD] || 0 },
-            "Final": { score: scores[QUARTERS.FINAL] || 0 },
-            yards: yards || 0
+            "Quarter 1": { score: scores[QUARTERS.FIRST] ?? 0 },
+            "Quarter 2": { score: scores[QUARTERS.SECOND] ?? 0 },
+            "Quarter 3": { score: scores[QUARTERS.THIRD] ?? 0 },
+            "Final": { score: scores[QUARTERS.FINAL] ?? 0 },
+            yards: yards ?? 0
         };
     }
 
