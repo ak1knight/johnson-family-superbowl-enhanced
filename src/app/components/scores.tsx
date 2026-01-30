@@ -3,7 +3,7 @@ import Card from "./card"
 import { periodNames, getTiebreakerForQuarter, PeriodName } from "../../data/formdata"
 import { FormContext, QUARTERS, TEAM_INDEX } from "@/data/form-context"
 import { observer } from "mobx-react"
-import { useDebouncedCallback, usePerformanceMonitor, memoizeWithLRU } from "../../utils/performance"
+import { usePerformanceMonitor, memoizeWithLRU } from "../../utils/performance"
 
 const extrainfo = ''
 
