@@ -10,7 +10,6 @@ import { observer } from 'mobx-react';
 
 const HomeContent = observer(() => {
     const [year] = useState(2026);
-    const [currentStep, setCurrentStep] = useState(0);
     const formStore = React.useContext(FormContext);
 
     // Define form sections for progress tracking
@@ -75,7 +74,6 @@ const HomeContent = observer(() => {
                     <div className="lg:col-span-3 order-2 lg:order-1">
                         <div className="hidden lg:block sticky top-4 h-fit">
                             <FormProgress
-                                currentStep={currentStep}
                                 totalSteps={sectionNames.length}
                                 completedSections={completedSections}
                                 sectionNames={sectionNames}
