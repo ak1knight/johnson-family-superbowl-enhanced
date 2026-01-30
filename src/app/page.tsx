@@ -4,12 +4,12 @@ import React, { useState, useMemo } from 'react'
 import EntryForm from "./components/entryform"
 import HeroSection from "./components/HeroSection"
 import FormProgress from "./components/FormProgress"
-import { questions } from "../data/formdata";
+import { questions, getLatestAvailableYear } from "../data/formdata";
 import { FormContext, FormStore } from '@/data/form-context';
 import { observer } from 'mobx-react';
 
-// Single source of truth for the current year
-const CURRENT_YEAR = 2026;
+// Get the latest year with available data
+const CURRENT_YEAR = parseInt(getLatestAvailableYear(), 10);
 
 const HomeContent = observer(() => {
     const [year] = useState(CURRENT_YEAR);
@@ -24,19 +24,20 @@ const HomeContent = observer(() => {
     ], [year]);
 
     // Track completed sections based on form data
-    const completedSections = useMemo(() => {
+    // MobX observer handles reactivity, so no need for useMemo
+    const getCompletedSections = () => {
         const completed = [];
         
         // Check if scores are filled (all 4 quarters for both teams)
-        const team1Complete = formStore.team1Scores.every(s => s !== undefined && s !== null);
-        const team2Complete = formStore.team2Scores.every(s => s !== undefined && s !== null);
-        const tiebreakerComplete = formStore.tiebreakers.slice(0, 3).every(t => t !== undefined && t !== null);
+        const team1Complete = formStore.team1Scores.every(s => s != null);
+        const team2Complete = formStore.team2Scores.every(s => s != null);
+        const tiebreakerComplete = formStore.tiebreakers.slice(0, 3).every(t => t != null);
         if (team1Complete && team2Complete && tiebreakerComplete) {
             completed.push('Team Scores');
         }
         
         // Check if tiebreakers are filled (first 3 quarters required)
-        const yardageComplete = formStore.team1Yards !== undefined && formStore.team2Yards !== undefined;
+        const yardageComplete = formStore.team1Yards != null && formStore.team2Yards != null;
         if (yardageComplete) {
             completed.push('Yardage Predictions');
         }
@@ -55,15 +56,9 @@ const HomeContent = observer(() => {
         }
         
         return completed;
-    }, [
-        formStore.team1Scores[0], formStore.team1Scores[1], formStore.team1Scores[2], formStore.team1Scores[3],
-        formStore.team2Scores[0], formStore.team2Scores[1], formStore.team2Scores[2], formStore.team2Scores[3],
-        formStore.tiebreakers[0], formStore.tiebreakers[1], formStore.tiebreakers[2],
-        formStore.team1Yards, formStore.team2Yards,
-        formStore.questionAnswers.join(','), // Join to create a single dependency
-        formStore.name,
-        year
-    ]);
+    };
+
+    const completedSections = getCompletedSections();
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral via-base-100 to-neutral/50">

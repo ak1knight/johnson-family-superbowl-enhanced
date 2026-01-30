@@ -46,6 +46,17 @@ export const teams:{[year: string]: Year} = {
     "2026": [{ name: TeamName.Patriots, icon: "/images/ne.svg" }, { name: TeamName.Seahawks, icon: "/images/sea.svg" }],
 } as const;
 
+// Super Bowl dates configuration
+export const superBowlDates: Record<string, string> = {
+    "2020": "February 2, 2020",
+    "2021": "February 7, 2021",
+    "2022": "February 13, 2022",
+    "2023": "February 12, 2023",
+    "2024": "February 11, 2024",
+    "2025": "February 9, 2025",
+    "2026": "February 8, 2026",
+};
+
 export const periodNames = ["Quarter 1", "Quarter 2", "Quarter 3", "Final"] as const;
 export type PeriodName = typeof periodNames[number];
 
