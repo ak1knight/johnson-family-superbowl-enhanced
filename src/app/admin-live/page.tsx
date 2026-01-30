@@ -28,7 +28,7 @@ const AdminLivePage = () => {
             </div> */}
 
             <div className="container mt-3">
-                <LiveWinningEntryForm questions={questions[currentYear]} year={parseInt(currentYear)} />
+                <LiveWinningEntryForm questions={questions[currentYear]} year={parseInt(currentYear, 10)} />
             </div>
         </div>
     );
