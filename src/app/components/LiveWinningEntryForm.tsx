@@ -77,7 +77,8 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
                         setWinningEntry(existing);
                     }
                 }
-            } catch (_error) {
+            //eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
                 console.log('No existing winning entry found');
             }
         }
