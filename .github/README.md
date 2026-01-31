@@ -137,7 +137,82 @@ Set up GitHub environments for deployment protection:
    - Lambda function deployment
    - DynamoDB table access
    - S3 bucket access (for static assets)
+   - ECR (Elastic Container Registry) permissions
    - Other services used by your SST application
+
+   **Required ECR Permissions:**
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": [
+           "ecr:CreateRepository",
+           "ecr:DescribeRepositories",
+           "ecr:GetAuthorizationToken",
+           "ecr:BatchCheckLayerAvailability",
+           "ecr:GetDownloadUrlForLayer",
+           "ecr:BatchGetImage",
+           "ecr:PutImage",
+           "ecr:InitiateLayerUpload",
+           "ecr:UploadLayerPart",
+           "ecr:CompleteLayerUpload"
+         ],
+         "Resource": "*"
+       }
+     ]
+   }
+   ```
+
+   **Complete SST IAM Policy Example:**
+   You can also attach the following comprehensive policy for SST deployments:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": [
+           "cloudformation:*",
+           "s3:*",
+           "lambda:*",
+           "dynamodb:*",
+           "ecr:*",
+           "cloudfront:*",
+           "apigateway:*",
+           "route53:*",
+           "acm:*",
+           "sqs:*",
+           "iam:CreateRole",
+           "iam:DeleteRole",
+           "iam:GetRole",
+           "iam:PassRole",
+           "iam:AttachRolePolicy",
+           "iam:DetachRolePolicy",
+           "iam:PutRolePolicy",
+           "iam:DeleteRolePolicy",
+           "iam:CreateServiceLinkedRole",
+           "sts:AssumeRole",
+           "logs:CreateLogGroup",
+           "logs:CreateLogStream",
+           "logs:PutLogEvents",
+           "logs:DescribeLogGroups",
+           "logs:DescribeLogStreams",
+           "ssm:GetParameter",
+           "ssm:GetParameters",
+           "ssm:PutParameter",
+           "ssm:DeleteParameter",
+           "events:*",
+           "scheduler:*"
+         ],
+         "Resource": "*"
+       }
+     ]
+   }
+   ```
+
+   **Note:** This policy provides broad permissions for SST deployments. For production environments, consider creating more restrictive policies based on your specific resource requirements.
 
 4. **Copy the Role ARN** and add it to your GitHub repository secrets as `AWS_ROLE_ARN`
 

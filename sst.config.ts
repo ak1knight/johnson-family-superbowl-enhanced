@@ -6,11 +6,23 @@ export default $config({
     return {
       name: "johnson-family-superbowl-enhanced",
       removal: input?.stage === "production" ? "retain" : "remove",
-      protect: ["production"].includes(input?.stage),
+      //protect: ["production"].includes(input?.stage),
       home: "aws",
     };
   },
   async run() {
-    new sst.aws.Nextjs("MyWeb");
+    const web = new sst.aws.Nextjs("MyWeb", {
+      transform: {
+        cdn: (args) => {
+          // Force CloudFront distribution to wait for server deployment
+          // This prevents the race condition where distribution is created before server origins
+          args.wait = true;
+        }
+      }
+    });
+
+    return {
+      url: web.url,
+    };
   },
 });
