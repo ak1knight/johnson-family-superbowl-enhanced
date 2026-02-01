@@ -5,20 +5,22 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --turbopack",
+    "dev:local": "next dev",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "lint:check": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "start": "next start"
+    "start": "next start",
+    "type-check": "tsc --noEmit",
+    "amplify:setup": "echo 'Visit AWS Amplify Console to connect this repository'",
+    "amplify:preview": "echo 'Deploy via Git push - Amplify will auto-build'"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.734.0",
     "@aws-sdk/lib-dynamodb": "^3.734.0",
-    "aws-sdk": "^2.1693.0",
     "mobx": "^6.13.5",
     "mobx-react": "^9.2.0",
     "next": "^16.1.6",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "sst": "3.17.38"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -28,7 +30,7 @@
     "@types/react-dom": "^19",
     "daisyui": "^4.12.23",
     "eslint": "^9.19.0",
-    "eslint-config-next": "15.1.6",
+    "eslint-config-next": "^16.1.6",
     "eslint-plugin-react": "^7.37.4",
     "globals": "^15.14.0",
     "postcss": "^8",

@@ -12,24 +12,24 @@ The **Johnson Family Super Bowl Enhanced** application allows family members to 
 - **Big Board**: View all entries and scoring results in an organized table format
 - **Prop Bet Board**: Track specific prop bet results and winners
 - **Multi-year Support**: Access historical data from Super Bowls 2020-2025
-- **AWS Integration**: Secure data storage using DynamoDB via SST framework
+- **AWS Integration**: Secure data storage using DynamoDB with AWS SDK
 - **Responsive Design**: Mobile-friendly interface built with Tailwind CSS and DaisyUI
 
 ## Technical Stack
 
-- **Frontend**: Next.js 15 with React 19, TypeScript
+- **Frontend**: Next.js 16 with React 19, TypeScript
 - **State Management**: MobX for reactive form state management
 - **Styling**: Tailwind CSS with DaisyUI component library
 - **Database**: AWS DynamoDB for scalable data storage
-- **Deployment**: SST (Serverless Stack) on AWS infrastructure
+- **Deployment**: AWS Amplify for simplified hosting and CI/CD
 - **Development Tools**: ESLint, TypeScript for code quality and type safety
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js 18+ installed
-- AWS account configured for deployment
-- SST CLI installed globally: `npm install -g sst`
+- AWS account with configured credentials
+- AWS CLI installed and configured: `aws configure`
 
 ### Local Development
 
@@ -44,24 +44,36 @@ cd johnson-family-superbowl-enhanced
 npm install
 ```
 
-3. Start the development server:
+3. Copy environment variables:
+```bash
+cp .env.example .env.local
+# Edit .env.local with your local settings
+```
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ### Deployment
 
-Deploy to AWS using SST:
+Deploy to AWS using Amplify:
 
+#### Quick Setup
 ```bash
-# Deploy to staging
-sst deploy
-
-# Deploy to production
-sst deploy --stage production
+# Run the setup script to check prerequisites
+./amplify-setup.sh
 ```
+
+#### Manual Setup
+1. **Connect Repository**: Go to [AWS Amplify Console](https://console.aws.amazon.com/amplify/) and connect your GitHub repository
+2. **Configure Build**: Amplify will automatically detect [`amplify.yml`](amplify.yml) configuration
+3. **Set Environment Variables**: Configure AWS_REGION, NODE_ENV, and DynamoDB table names
+4. **Deploy**: Push to main branch for automatic deployment
+
+For detailed instructions, see [`deployment-guide.md`](deployment-guide.md)
 
 ## Project Structure
 

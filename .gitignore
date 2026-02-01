@@ -40,8 +40,16 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# sst
+# sst (legacy - can be removed after migration)
 .sst
 
 # open-next
 .open-next
+
+# amplify
+#amplify/
+#amplify-do-not-edit-generated-files.txt
+.amplifyrc
+amplify-meta.json
+amplify-cloudformation-stack.json
+backend-config.json

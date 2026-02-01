@@ -6,7 +6,7 @@
 
 declare module "sst" {
   export interface Resource {
-    "MyWeb": {
+    "JohnsonFamilySuperbowl": {
       "type": "sst.aws.Nextjs"
       "url": string
     }

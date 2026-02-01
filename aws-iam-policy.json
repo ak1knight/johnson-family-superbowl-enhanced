@@ -1,0 +1,35 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DynamoDBTableAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:us-west-1:*:table/SuperBowlEntries",
+        "arn:aws:dynamodb:us-west-1:*:table/SuperBowlEntries/index/*",
+        "arn:aws:dynamodb:us-west-1:*:table/WinningEntry",
+        "arn:aws:dynamodb:us-west-1:*:table/WinningEntry/index/*"
+      ]
+    },
+    {
+      "Sid": "DynamoDBDescribeAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:DescribeTable",
+        "dynamodb:DescribeTimeToLive",
+        "dynamodb:ListTables"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
