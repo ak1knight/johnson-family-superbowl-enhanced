@@ -61,7 +61,7 @@ const NFL_TEAMS: TeamTheme[] = [
 ];
 
 const OTHER_THEMES = [
-    { name: 'Default', value: 'mytheme' },
+    { name: 'Super Bowl LX', value: 'mytheme' },
     { name: 'Dark', value: 'dracula' },
 ];
 
