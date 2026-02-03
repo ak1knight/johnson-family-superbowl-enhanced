@@ -52,62 +52,122 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
     }, [formStore.year]);
     
     return <>
-        <div className="flex gap-4" >
-            <div className="w-1/4">
-            </div>
-            {periodNames.map((q, j)  => (
-                <div key={j} className="w-1/4">
-                    <h4>{q}</h4>
+        {/* Desktop layout - horizontal */}
+        <div className="hidden md:block">
+            <div className="flex gap-4">
+                <div className="w-1/4">
                 </div>
-            ))}
-        </div>
-        <div className="flex gap-4" >
-            <div className="w-1/4 flex items-center">
-                <h4 className="flex items-center gap-1">{homeTeam.name} {!!homeTeam.icon && <img style={{width:"1em", height:"1em", verticalAlign: "middle"}} src={homeTeam.icon} />}</h4>
+                {periodNames.map((q, j)  => (
+                    <div key={j} className="w-1/4">
+                        <h4>{q}</h4>
+                    </div>
+                ))}
             </div>
-            {periodNames.map((q, j) => (
-                <div key={j} className="w-1/4">
-                    <input
-                        type="number"
-                        value={formStore.team1Scores[j] || ''}
-                        className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
-                        onChange={(e) => handleScoreChange(TEAM_INDEX.HOME, j, e.target.value)}
-                    />
+            <div className="flex gap-4">
+                <div className="w-1/4 flex items-center">
+                    <h4 className="flex items-center gap-1">{homeTeam.name} {!!homeTeam.icon && <img style={{width:"1em", height:"1em", verticalAlign: "middle"}} src={homeTeam.icon} />}</h4>
                 </div>
-            ))}
-        </div>
-        <div className="flex gap-4" >
-            <div className="w-1/4 flex items-center">
-                <h4 className="flex items-center gap-1">{awayTeam.name} {!!awayTeam.icon && <img style={{width:"1em", height:"1em", verticalAlign: "middle"}} src={awayTeam.icon} />}</h4>
-            </div>
-            {periodNames.map((q, j) => (
-                <div key={j} className="w-1/4">
-                    <input
-                        type="number"
-                        value={formStore.team2Scores[j] || ''}
-                        className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
-                        onChange={(e) => handleScoreChange(TEAM_INDEX.AWAY, j, e.target.value)}
-                    />
-                </div>
-            ))}
-        </div>
-        <div className="flex gap-4" >
-            <div className="w-1/4 flex items-center">
-                <h4>Tiebreaker</h4>
-            </div>
-            {periodNames.map((q, j) => (
-                <div key={j} className="w-1/4">
-                    {j !== QUARTERS.FINAL && <>
+                {periodNames.map((q, j) => (
+                    <div key={j} className="w-1/4">
                         <input
                             type="number"
-                            value={formStore.tiebreakers[j] || ''}
-                            className="input input-bordered input-sm w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
-                            onChange={(e) => handleTiebreakerChange(j, e.target.value)}
+                            value={formStore.team1Scores[j] || ''}
+                            className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
+                            onChange={(e) => handleScoreChange(TEAM_INDEX.HOME, j, e.target.value)}
                         />
-                        <small className="form-text text-base-300 text-xs">
-                            {tiebreakerTexts[j] || 'Tiebreaker info unavailable'}
-                        </small>
-                    </>}
+                    </div>
+                ))}
+            </div>
+            <div className="flex gap-4">
+                <div className="w-1/4 flex items-center">
+                    <h4 className="flex items-center gap-1">{awayTeam.name} {!!awayTeam.icon && <img style={{width:"1em", height:"1em", verticalAlign: "middle"}} src={awayTeam.icon} />}</h4>
+                </div>
+                {periodNames.map((q, j) => (
+                    <div key={j} className="w-1/4">
+                        <input
+                            type="number"
+                            value={formStore.team2Scores[j] || ''}
+                            className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
+                            onChange={(e) => handleScoreChange(TEAM_INDEX.AWAY, j, e.target.value)}
+                        />
+                    </div>
+                ))}
+            </div>
+            <div className="flex gap-4">
+                <div className="w-1/4 flex items-center">
+                    <h4>Tiebreaker</h4>
+                </div>
+                {periodNames.map((q, j) => (
+                    <div key={j} className="w-1/4">
+                        {j !== QUARTERS.FINAL && <>
+                            <input
+                                type="number"
+                                value={formStore.tiebreakers[j] || ''}
+                                className="input input-bordered input-sm w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
+                                onChange={(e) => handleTiebreakerChange(j, e.target.value)}
+                            />
+                            <small className="form-text text-base-300 text-xs">
+                                {tiebreakerTexts[j] || 'Tiebreaker info unavailable'}
+                            </small>
+                        </>}
+                    </div>
+                ))}
+            </div>
+        </div>
+
+        {/* Mobile layout - vertical cards */}
+        <div className="md:hidden space-y-4">
+            {periodNames.map((q, j) => (
+                <div key={j} className="bg-base-100 rounded-lg p-4 border border-base-300">
+                    <h4 className="text-lg font-semibold mb-4 text-center">{q}</h4>
+                    
+                    <div className="space-y-3">
+                        {/* Home team */}
+                        <div className="flex items-center justify-between">
+                            <h5 className="flex items-center gap-2 flex-1">
+                                {homeTeam.name}
+                                {!!homeTeam.icon && <img style={{width:"1.2em", height:"1.2em", verticalAlign: "middle"}} src={homeTeam.icon} />}
+                            </h5>
+                            <input
+                                type="number"
+                                value={formStore.team1Scores[j] || ''}
+                                className="input input-bordered w-20 bg-base-200 focus:bg-primary focus:text-primary-content"
+                                onChange={(e) => handleScoreChange(TEAM_INDEX.HOME, j, e.target.value)}
+                            />
+                        </div>
+                        
+                        {/* Away team */}
+                        <div className="flex items-center justify-between">
+                            <h5 className="flex items-center gap-2 flex-1">
+                                {awayTeam.name}
+                                {!!awayTeam.icon && <img style={{width:"1.2em", height:"1.2em", verticalAlign: "middle"}} src={awayTeam.icon} />}
+                            </h5>
+                            <input
+                                type="number"
+                                value={formStore.team2Scores[j] || ''}
+                                className="input input-bordered w-20 bg-base-200 focus:bg-primary focus:text-primary-content"
+                                onChange={(e) => handleScoreChange(TEAM_INDEX.AWAY, j, e.target.value)}
+                            />
+                        </div>
+                        
+                        {/* Tiebreaker */}
+                        {j !== QUARTERS.FINAL && (
+                            <div className="mt-4 pt-3 border-t border-base-300">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium">Tiebreaker</span>
+                                    <input
+                                        type="number"
+                                        value={formStore.tiebreakers[j] || ''}
+                                        className="input input-bordered input-sm w-20 bg-base-200 focus:bg-primary focus:text-primary-content"
+                                        onChange={(e) => handleTiebreakerChange(j, e.target.value)}
+                                    />
+                                </div>
+                                <small className="form-text text-base-content/70 text-xs block">
+                                    {tiebreakerTexts[j] || 'Tiebreaker info unavailable'}
+                                </small>
+                            </div>
+                        )}
+                    </div>
                 </div>
             ))}
         </div>
