@@ -26,7 +26,7 @@ const CompetitionDashboard = () => {
     const viewTabs = useMemo(() => [
         {
             id: 'scores' as const,
-            label: 'Score Predictions',
+            label: 'Scores',
             icon: '🏈',
             description: 'Quarter-by-quarter scoring results'
         },
@@ -35,12 +35,6 @@ const CompetitionDashboard = () => {
             label: 'Prop Bets',
             icon: '🎯',
             description: 'Proposition bet outcomes'
-        },
-        {
-            id: 'combined' as const,
-            label: 'Combined Rankings',
-            icon: '🏆',
-            description: 'Overall competition standings'
         }
     ], []);
 

@@ -670,30 +670,27 @@ export const questions: Record<string, Question[]> = {
             options: [{ name: "Sack", score: 75 }, { name: "Interception", score: 125 }, { name: "Neither in Q1", score: 100 }]
         },
         {
-            question: "Who will be the halftime performer's first guest artist?",
-            short: 'HT Guest Artist',
+            question: "What song will Bad Bunny perform first during the halftime show?",
+            short: 'HT First Song',
             gamePhase: 'halftime',
             extrainfo: "Recent Super Bowls have featured surprise guests",
             options: [
-                { name: "No Guest Artists", score: 125 },
-                { name: "Previous Super Bowl Performer", score: 100 },
-                { name: "Current Chart-Topper", score: 100 },
-                { name: "Rock/Metal Artist", score: 150 },
-                { name: "Country Artist", score: 175 },
-                { name: "Completely Unexpected", score: 200 }
+                { name: "Tití Me Preguntó/ALAMBRE PuA/La Mudanza", score: 100 },
+                { name: "NUEVAYoL/DTmF/MONACO", score: 125 },
+                { name: "Me Porto Bonito/BAILE INoLVIDABLE", score: 175 },
+                { name: "I Like It/Efecto/VeLDA/LO QUE LE PASO HAWAii", score: 250 }
             ]
         },
         {
-            question: "What color will dominate the halftime stage lighting?",
-            short: 'HT Lighting',
+            question: "What color will be the dominant color of Bad Bunny's first outfit?",
+            short: 'HT Outfit Color',
             gamePhase: 'halftime',
             options: [
-                { name: "Blue", score: 100 },
+                { name: "Black / White", score: 100 },
                 { name: "Red", score: 100 },
-                { name: "Purple", score: 125 },
-                { name: "Green", score: 125 },
-                { name: "Gold/Yellow", score: 150 },
-                { name: "Multi-color/Rainbow", score: 75 }
+                { name: "Blue", score: 125 },
+                { name: "Metallic / Chrome / Silver", score: 125 },
+                { name: "Neon / Multicolor", score: 150 }
             ]
         },
         {
@@ -726,14 +723,12 @@ export const questions: Record<string, Question[]> = {
             short: 'MVP',
             gamePhase: 'post-game',
             options: [
-                { name: "Patriots QB", score: 100 },
-                { name: "Seahawks QB", score: 100 },
-                { name: "Patriots RB", score: 150 },
-                { name: "Seahawks RB", score: 150 },
-                { name: "Patriots WR/TE", score: 125 },
-                { name: "Seahawks WR/TE", score: 125 },
-                { name: "Defensive Player", score: 200 },
-                { name: "Kicker/Special Teams", score: 500 }
+                { name: "Drake Maye (NE QB)", score: 100, image: "/images/dmaye.webp" },
+                { name: "Sam Darnold (SEA QB)", score: 100, image: "/images/sdarnold.webp" },
+                { name: "Kenneth Walker III (SEA RB)", score: 150, image: "/images/kwalker.webp" },
+                { name: "Jaxon Smith-Njigba (SEA WR)", score: 150, image: "/images/jnjigba.webp" },
+                { name: "Defensive Player or Other Offensive Player", score: 200, image: "/images/generic.png" },
+                { name: "Kicker/Special Teams", score: 500, image: "/images/generic.png" }
             ]
         }
     ],

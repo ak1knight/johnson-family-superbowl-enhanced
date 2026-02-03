@@ -58,7 +58,7 @@ const BigBoardHero = ({ selectedYear, onYearChange, availableYears, totalEntries
         
         <div className="container mx-auto h-full flex flex-col justify-center items-center p-8 relative z-10">
           {/* Main Title */}
-          <div className="text-center mb-8 animate-fade-in">
+          <div className="text-center mb-4 md:mb-8 animate-fade-in">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight">
               <span className="block text-2xl md:text-3xl lg:text-4xl font-normal opacity-90 mb-2">
                 Johnson Family
@@ -73,21 +73,21 @@ const BigBoardHero = ({ selectedYear, onYearChange, availableYears, totalEntries
           </div>
 
           {/* Stats Display */}
-          <div className="mb-8 animate-slide-up">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-              <div className="bg-secondary/20 backdrop-blur-sm rounded-xl p-6">
+          <div className="mb-4 md:mb-8 animate-slide-up">
+            <div className="flex flex-row flex-wrap justify-center md:grid md:grid-cols-3 gap-6 text-center">
+              <div className="shrink-0 bg-secondary/20 backdrop-blur-sm rounded-xl p-6">
                 <div className="text-3xl md:text-4xl font-bold text-accent mb-2">
                   {animatedCount}
                 </div>
                 <div className="text-sm opacity-80">Total Entries</div>
               </div>
-              <div className="bg-secondary/20 backdrop-blur-sm rounded-xl p-6">
+              <div className="shrink-0 bg-secondary/20 backdrop-blur-sm rounded-xl p-6">
                 <div className="text-3xl md:text-4xl font-bold text-accent mb-2">
                   {selectedYear}
                 </div>
                 <div className="text-sm opacity-80">Current Year</div>
               </div>
-              <div className="bg-secondary/20 backdrop-blur-sm rounded-xl p-6">
+              <div className="shrink-0 bg-secondary/20 backdrop-blur-sm rounded-xl p-6">
                 <div className="text-3xl md:text-4xl font-bold text-accent mb-2">
                   {availableYears.length}
                 </div>

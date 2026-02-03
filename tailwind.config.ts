@@ -18,19 +18,50 @@ export default {
   plugins: [daisyui],
   daisyui: {
     themes: [
-      {
-        mytheme: {
-          "primary": "#65956D",
-          "secondary": "#47546B",
-          "accent": "#CF9A95",
-          "neutral": "#F0EACC",
-          "base-100":  "#ffffff",
-          "info": "#77A399",
-          "success": "#B2CFA5",
-          "warning": "#FFD0B0",
-          "error": "#E0A096",
-        }
-      },
+      // {
+      //   mytheme: {
+      //     "primary": "#65956D",
+      //     "secondary": "#47546B",
+      //     "accent": "#CF9A95",
+      //     "neutral": "#F0EACC",
+      //     "base-100":  "#ffffff",
+      //     "info": "#77A399",
+      //     "success": "#B2CFA5",
+      //     "warning": "#FFD0B0",
+      //     "error": "#E0A096",
+      //   }
+      // },
+      // daisyUI theme: "superbowl-lx"
+{ mytheme: {
+  "primary":        "#FE01C2", // neon cyan
+  "primary-content":"#061014",
+
+  "secondary":        "#0ECFFE", // hot magenta
+  "secondary-content":"#16000F",
+
+  "accent":        "#D8D34B", // electric yellow
+  "accent-content":"#121200",
+
+  "neutral":        "#fffbf0", // deep charcoal/black
+  "neutral-content":"#FFFFFF",
+
+  "base-100":        "#f8f9fb", // chrome/white
+  "base-200":        "#F3F3F4", // light silver
+  "base-300":        "#D1D3D6", // mid silver
+  "base-content":    "#0B0C0C",
+
+  "info":         "#24D0F9", // bright cyan-blue
+  "info-content": "#061014",
+
+  "success":         "#5FAC69", // evergreen
+  "success-content": "#07140A",
+
+  "warning":         "#D8D34B", // same as accent (fits the logo)
+  "warning-content": "#121200",
+
+  "error":         "#E3192C", // vivid red
+  "error-content": "#160204",
+}},
       'dracula',
       {
         // AFC EAST

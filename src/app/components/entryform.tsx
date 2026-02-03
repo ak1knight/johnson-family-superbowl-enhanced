@@ -163,7 +163,7 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
                                     name={option.name}
                                     className={`
                                         w-full p-4 min-h-24 rounded-lg border-2 transition-all duration-200
-                                        flex justify-center items-center flex-wrap text-center
+                                        flex justify-center justify-items-center items-center flex-wrap text-center
                                         ${isSelected
                                             ? 'bg-primary text-primary-content border-primary shadow-lg scale-105'
                                             : 'bg-base-200 hover:bg-base-300 border-base-300 hover:border-primary/50 hover:shadow-md'
@@ -186,7 +186,7 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
                                     
                                     {/* Image */}
                                     {!!option.image && (
-                                        <div className='h-16 w-16 relative mb-2'>
+                                        <div className='h-16 w-16 relative mb-2 flex-initial'>
                                             <Image
                                                 alt="option"
                                                 src={option.image}
@@ -209,7 +209,7 @@ const EntryForm = observer(({questions, isAdmin = false, endpoint = "/api/entry/
                                     )}
                                     
                                     {/* Text content */}
-                                    <div className="text-lg font-medium">
+                                    <div className="text-lg font-medium flex-grow">
                                         {option.name} - {option.score}
                                     </div>
                                 </button>
