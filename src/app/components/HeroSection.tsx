@@ -66,7 +66,7 @@ const HeroSection = ({ year }: HeroSectionProps) => {
               <span className="block text-2xl md:text-3xl lg:text-4xl font-normal opacity-90 mb-2">
                 Johnson Family
               </span>
-              <span className="bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-accent to-secondary bg-clip-text text-transparent drop-shadow-lg">
                 Super Bowl {year}
               </span>
               <span className="block text-lg md:text-xl lg:text-2xl font-normal opacity-80 mt-2">
