@@ -723,12 +723,12 @@ export const questions: Record<string, Question[]> = {
             short: 'MVP',
             gamePhase: 'post-game',
             options: [
-                { name: "Drake Maye (NE QB)", score: 100 },
-                { name: "Sam Darnold (SEA QB)", score: 100 },
-                { name: "Kenneth Walker III (SEA RB)", score: 150 },
-                { name: "Jaxon Smith-Njigba (SEA WR)", score: 150 },
-                { name: "Defensive Player or Other Offensive Player", score: 200 },
-                { name: "Kicker/Special Teams", score: 500 }
+                { name: "Drake Maye (NE QB)", score: 100, image: "/images/dmaye.webp" },
+                { name: "Sam Darnold (SEA QB)", score: 100, image: "/images/sdarnold.webp" },
+                { name: "Kenneth Walker III (SEA RB)", score: 150, image: "/images/kwalker.webp" },
+                { name: "Jaxon Smith-Njigba (SEA WR)", score: 150, image: "/images/jnjigba.webp" },
+                { name: "Defensive Player or Other Offensive Player", score: 200, image: "/images/generic.png" },
+                { name: "Kicker/Special Teams", score: 500, image: "/images/generic.png" }
             ]
         }
     ],

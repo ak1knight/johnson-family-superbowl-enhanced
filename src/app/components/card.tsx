@@ -32,7 +32,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(props, re
         
         const variantClasses = {
             default: "bg-base-100 shadow-lg hover:shadow-xl",
-            glass: "bg-base-100/80 backdrop-blur-sm shadow-lg hover:shadow-xl border border-base-300/50",
+            glass: "bg-base-100/80 backdrop-blur-sm shadow-lg border border-base-300/50",
             elevated: "bg-base-100 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1",
             bordered: "bg-base-100 border-2 border-primary/20 hover:border-primary/40 shadow-md hover:shadow-lg"
         };
@@ -49,9 +49,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(props, re
             ? "ring-2 ring-primary/30 border-primary/20 shadow-primary/10"
             : "";
 
-        const hoverClasses = isHovered ? "scale-[1.02]" : "";
-
-        return `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${statusClasses} ${hoverClasses}`;
+        return `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${statusClasses}`;
     };
 
     const getTitleClasses = () => {
@@ -107,7 +105,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(props, re
                         
                         {/* Icon */}
                         {icon && (
-                            <div className={`flex-shrink-0 transition-transform duration-200 ${isHovered ? 'scale-110' : ''}`}>
+                            <div className={`flex-shrink-0 transition-transform duration-200`}>
                                 {icon}
                             </div>
                         )}
@@ -143,9 +141,6 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(props, re
 
             {/* Custom styles for enhanced effects */}
             <style jsx>{`
-                .card:hover {
-                    transform: translateY(-2px);
-                }
                 
                 .shadow-3xl {
                     box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
