@@ -1,341 +1,288 @@
-# GitHub Actions CI/CD Pipeline
+# GitHub Workflows for AWS Amplify
 
-This repository includes a comprehensive GitHub Actions CI/CD pipeline for automated testing, security scanning, and deployment of the Johnson Family Super Bowl Enhanced application.
+This repository includes a comprehensive GitHub Actions pipeline optimized for AWS Amplify deployment of the Johnson Family Super Bowl Enhanced application.
 
-## Overview
+## 🔄 Migration Status
+
+The application has been **migrated from SST to AWS Amplify**. The workflows have been updated accordingly:
+
+- ✅ **CI Pipeline** - Updated for Amplify build validation
+- ✅ **Amplify Monitor** - New workflow for deployment monitoring  
+- ✅ **Security Scan** - Enhanced with Amplify-specific checks
+- 🚨 **Legacy Deploy** - Disabled (deployments now handled by Amplify)
+
+## 📋 Active Workflows
 
 The CI/CD pipeline consists of three main workflows:
 
-1. **CI Pipeline** ([`ci.yml`](.github/workflows/ci.yml)) - Continuous Integration
-2. **Deployment** ([`deploy.yml`](.github/workflows/deploy.yml)) - Automated deployments
-3. **Security Scan** ([`security.yml`](.github/workflows/security.yml)) - Security and dependency monitoring
+1. **CI Pipeline** ([`ci.yml`](workflows/ci.yml)) - Continuous Integration with Amplify validation
+2. **Amplify Monitor** ([`amplify-deploy.yml`](workflows/amplify-deploy.yml)) - Deployment monitoring and validation
+3. **Security Scan** ([`security.yml`](workflows/security.yml)) - Security and compliance monitoring
 
-## Workflows
+## Workflow Details
 
 ### 1. CI Pipeline (`ci.yml`)
+
+**Purpose**: Continuous Integration with Amplify build validation
 
 **Triggers:**
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop` branches
 
 **Jobs:**
-- **Lint and Build**: ESLint, TypeScript checking, and Next.js build
-- **Security Scan**: npm audit for vulnerabilities
-- **Test**: Application testing and build verification
+- **Lint and Build**: ESLint, TypeScript checking, Next.js build
+- **Security Scan**: npm audit, sensitive file detection
+- **Amplify Validation**: Validates [`amplify.yml`](../amplify.yml) and build artifacts
+- **Test**: Application testing and startup validation
 
-**Features:**
-- Matrix testing on Node.js 18.x and 20.x
-- Build artifact caching
-- Automated build startup testing
+**Key Features:**
+- Validates Amplify configuration before deployment
+- Simulates Amplify build process
+- Environment variable structure validation
+- Build artifact verification
 
-### 2. Deployment (`deploy.yml`)
+### 2. Amplify Deployment Monitor (`amplify-deploy.yml`)
+
+**Purpose**: Monitors and validates Amplify deployments
 
 **Triggers:**
-- Push to `main` (production) or `develop` (staging) branches
-- Manual workflow dispatch with stage selection
+- Push to `main` or `develop` branches (monitors automatic Amplify builds)
+- Manual workflow dispatch for status checking
 
 **Jobs:**
-- **Deploy**: Deploy to AWS using SST
-- **Cleanup**: Remove old deployments (production only)
+- **Pre-Deployment Validation**: Build validation before Amplify processes
+- **Monitor Amplify Deployment**: Tracks deployment status via AWS CLI
+- **Deployment Summary**: Creates comprehensive deployment reports
 
-**Features:**
-- Environment-specific deployments (staging/production)
-- AWS credential configuration
-- Post-deployment health checks
-- Manual deployment controls
+**Key Features:**
+- Pre-validates builds before Amplify deploys
+- Optional AWS CLI monitoring (requires credentials)
+- Health checks post-deployment
+- Environment-specific validation
 
 ### 3. Security Scan (`security.yml`)
 
+**Purpose**: Comprehensive security scanning with Amplify-specific checks
+
 **Triggers:**
 - Daily schedule (2 AM UTC)
-- Push to `main` branch
-- Pull requests to `main` branch
+- Push to `main` or `develop` branches
+- Pull requests to `main` or `develop` branches
 - Manual workflow dispatch
 
 **Jobs:**
-- **Dependency Scan**: npm audit for security vulnerabilities
-- **License Scan**: License compliance checking
-- **Outdated Packages**: Dependency update monitoring
-- **CodeQL Analysis**: Static code analysis
-- **Dependency Review**: PR-specific dependency analysis
+- **Dependency Security Scan**: npm audit, vulnerability detection
+- **License Compliance Check**: License validation
+- **Outdated Packages**: Dependency freshness monitoring
+- **CodeQL Analysis**: Static code security analysis
+- **Dependency Review**: PR dependency changes analysis
+- **Amplify Security Check**: Amplify-specific security validation
 
-## Setup Requirements
+**Amplify Security Features:**
+- Validates no sensitive files are committed
+- Checks [`amplify.yml`](../amplify.yml) for security best practices
+- Detects SST remnants requiring cleanup
+- Validates AWS security configurations
+- Prevents hardcoded credentials/regions
 
-### 1. Repository Secrets
+## 🔧 Configuration
 
-Configure the following secrets in your GitHub repository (`Settings > Secrets and variables > Actions`):
+### Repository Variables
 
+Configure these in GitHub repository settings → Secrets and variables → Actions:
+
+**Variables:**
 ```
-AWS_ROLE_ARN           # AWS IAM role ARN for OIDC authentication
+AMPLIFY_APP_ID=<your-amplify-app-id>           # Required for deployment monitoring
+AWS_REGION=us-west-1                           # AWS region (should match DynamoDB)
 ```
 
-**Note:** This configuration uses AWS OIDC (OpenID Connect) authentication, which is more secure than storing long-term AWS access keys.
-
-### 2. Repository Variables
-
-Configure the following variables (optional):
-
+**Secrets** (Optional - for enhanced monitoring):
 ```
-AWS_REGION             # AWS region (defaults to us-east-1)
+AWS_ACCESS_KEY_ID=<access-key>                 # For AWS CLI monitoring
+AWS_SECRET_ACCESS_KEY=<secret-key>             # For AWS CLI monitoring
 ```
 
-### 3. Environment Configuration
+### Environment Protection Rules
 
-Set up GitHub environments for deployment protection:
+Configure in GitHub repository settings → Environments:
 
-1. Go to `Settings > Environments`
-2. Create environments:
-   - `staging` - for develop branch deployments
-   - `production` - for main branch deployments
+- **production** - Requires approval, restricted to `main` branch
+- **staging** - Automatic deployment from `develop` branch
 
-3. Configure protection rules for production:
-   - Required reviewers
-   - Wait timer
-   - Deployment branches (restrict to `main`)
+### Branch Protection
 
-## AWS Configuration
+Recommended settings for `main` branch:
+- ✅ Require status checks (CI Pipeline)
+- ✅ Require up-to-date branches
+- ✅ Restrict pushes (use PRs)
+- ✅ Require linear history
 
-### Prerequisites
+## 🚀 Deployment Process
 
-1. **AWS Account**: Ensure you have an AWS account set up
-2. **SST Configuration**: Verify [`sst.config.ts`](sst.config.ts) is properly configured
-3. **OIDC Setup**: Configure AWS OIDC identity provider and IAM role (see below)
+### How Amplify Deployments Work
 
-### Setting up AWS OIDC Authentication
+AWS Amplify handles deployments automatically when connected to your GitHub repository:
 
-1. **Create OIDC Identity Provider** in AWS IAM:
-   - Provider Type: OpenID Connect
-   - Provider URL: `https://token.actions.githubusercontent.com`
-   - Audience: `sts.amazonaws.com`
+1. **Push to `develop`** → Amplify automatically builds staging environment
+2. **Push to `main`** → Amplify automatically builds production environment  
+3. **GitHub workflows** validate builds and monitor the deployment process
 
-2. **Create IAM Role** with the following trust policy:
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Principal": {
-           "Federated": "arn:aws:iam::YOUR_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
-         },
-         "Action": "sts:AssumeRoleWithWebIdentity",
-         "Condition": {
-           "StringEquals": {
-             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-           },
-           "StringLike": {
-             "token.actions.githubusercontent.com:sub": "repo:YOUR_GITHUB_USERNAME/johnson-family-superbowl-enhanced:*"
-           }
-         }
-       }
-     ]
-   }
-   ```
+### Amplify Configuration
 
-3. **Attach IAM Policies** to the role with permissions for:
-   - CloudFormation stack management
-   - Lambda function deployment
-   - DynamoDB table access
-   - S3 bucket access (for static assets)
-   - ECR (Elastic Container Registry) permissions
-   - Other services used by your SST application
+The deployment behavior is controlled by [`amplify.yml`](../amplify.yml):
 
-   **Required ECR Permissions:**
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Action": [
-           "ecr:CreateRepository",
-           "ecr:DescribeRepositories",
-           "ecr:GetAuthorizationToken",
-           "ecr:BatchCheckLayerAvailability",
-           "ecr:GetDownloadUrlForLayer",
-           "ecr:BatchGetImage",
-           "ecr:PutImage",
-           "ecr:InitiateLayerUpload",
-           "ecr:UploadLayerPart",
-           "ecr:CompleteLayerUpload"
-         ],
-         "Resource": "*"
-       }
-     ]
-   }
-   ```
+```yaml
+version: 1
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - nvm use 20
+            - npm ci
+        build:
+          commands:
+            - npm run build
+      artifacts:
+        baseDirectory: .next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - .next/cache/**/*
+```
 
-   **Complete SST IAM Policy Example:**
-   You can also attach the following comprehensive policy for SST deployments:
-   ```json
-   {
-     "Version": "2012-10-17",
-     "Statement": [
-       {
-         "Effect": "Allow",
-         "Action": [
-           "cloudformation:*",
-           "s3:*",
-           "lambda:*",
-           "dynamodb:*",
-           "ecr:*",
-           "cloudfront:*",
-           "apigateway:*",
-           "route53:*",
-           "acm:*",
-           "sqs:*",
-           "iam:CreateRole",
-           "iam:DeleteRole",
-           "iam:GetRole",
-           "iam:PassRole",
-           "iam:AttachRolePolicy",
-           "iam:DetachRolePolicy",
-           "iam:PutRolePolicy",
-           "iam:DeleteRolePolicy",
-           "iam:CreateServiceLinkedRole",
-           "sts:AssumeRole",
-           "logs:CreateLogGroup",
-           "logs:CreateLogStream",
-           "logs:PutLogEvents",
-           "logs:DescribeLogGroups",
-           "logs:DescribeLogStreams",
-           "ssm:GetParameter",
-           "ssm:GetParameters",
-           "ssm:PutParameter",
-           "ssm:DeleteParameter",
-           "events:*",
-           "scheduler:*"
-         ],
-         "Resource": "*"
-       }
-     ]
-   }
-   ```
+### Manual Workflow Execution
 
-   **Note:** This policy provides broad permissions for SST deployments. For production environments, consider creating more restrictive policies based on your specific resource requirements.
+While deployments are automatic, you can manually run workflows:
 
-4. **Copy the Role ARN** and add it to your GitHub repository secrets as `AWS_ROLE_ARN`
+1. **CI Pipeline**: Validate build before pushing
+2. **Amplify Monitor**: Check current deployment status
+3. **Security Scan**: Run security checks on-demand
 
-### SST Deployment
+## 📊 Monitoring Deployments
 
-The deployment workflow uses SST (Serverless Stack) for infrastructure management:
+### GitHub Actions Dashboard
+- Monitor workflow runs in the `Actions` tab
+- View deployment summaries and health check results
+- Check security scan reports
 
-- **Staging**: `npx sst deploy --stage staging`
-- **Production**: `npx sst deploy --stage production`
+### AWS Amplify Console
+- Real-time build progress: [AWS Amplify Console](https://console.aws.amazon.com/amplify/)
+- Build logs and error details
+- Environment management and configuration
 
-## Workflow Features
+### Deployment URLs
+- **Production**: `https://johnsonfamilysuperbowl.com` (or custom domain)
+- **Staging**: `https://develop.[app-id].amplifyapp.com`
 
-### Build Optimization
+## 🧹 Post-Migration Cleanup
 
-- **Dependency Caching**: npm cache is preserved between runs
-- **Build Artifacts**: Compiled Next.js build is cached and reused
-- **Matrix Testing**: Tests run on multiple Node.js versions
+After confirming Amplify is working correctly, clean up SST-related files:
 
-### Security Features
+### 1. Remove Legacy Deploy Workflow
+```bash
+rm .github/workflows/deploy.yml  # After confirming disabled workflow works
+```
 
-- **Vulnerability Scanning**: Automated npm audit checks
-- **License Compliance**: Monitors package licenses
-- **CodeQL Analysis**: GitHub's security scanning
-- **Dependency Review**: Automatic security review for PRs
+### 2. Remove SST Configuration Files
+```bash
+rm sst.config.ts sst-env.d.ts
+rm -rf .sst/ stacks/  # If these directories exist
+```
 
-### Deployment Features
+### 3. Update package.json
+Remove SST dependencies from [`package.json`](../package.json):
+```bash
+npm uninstall sst @serverless-stack/cli  # If these were installed
+```
 
-- **Environment Isolation**: Separate staging and production deployments
-- **Health Checks**: Post-deployment verification
-- **Manual Controls**: Ability to trigger deployments manually
-- **Cleanup**: Automated removal of old resources
+### 4. Clean up Environment Variables
+- Remove `AWS_ROLE_ARN` and other SST-specific secrets from GitHub
+- Ensure Amplify environment variables are configured in Amplify Console
 
-## Usage
-
-### Automatic Deployments
-
-- **Staging**: Push to `develop` branch
-- **Production**: Push to `main` branch
-
-### Manual Deployments
-
-1. Go to `Actions` tab in GitHub
-2. Select `Deploy` workflow
-3. Click `Run workflow`
-4. Choose stage and options
-5. Click `Run workflow`
-
-### Monitoring
-
-Monitor workflow runs in the `Actions` tab:
-
-- ✅ **Success**: All checks passed
-- ❌ **Failure**: Check logs for details
-- 🟡 **In Progress**: Workflow currently running
-
-## Troubleshooting
+## 🔍 Troubleshooting
 
 ### Common Issues
 
-1. **Build Failures**
-   - Check ESLint errors: `npm run lint`
-   - Verify TypeScript: `npx tsc --noEmit`
-   - Test local build: `npm run build`
+**Build Failures:**
+- Check [`amplify.yml`](../amplify.yml) configuration syntax
+- Verify Node.js version consistency (20.x)
+- Review environment variables in Amplify Console
+- Check build logs in Amplify Console
 
-2. **Deployment Failures**
-   - Verify AWS OIDC role ARN is configured in GitHub secrets
-   - Check that AWS OIDC identity provider is set up correctly
-   - Ensure the IAM role has sufficient permissions
-   - Verify the trust policy allows your GitHub repository
-   - Check SST configuration in [`sst.config.ts`](sst.config.ts)
+**Security Scan Failures:**
+- Run `npm audit fix` for dependency vulnerabilities
+- Remove any committed `.env` files
+- Verify no hardcoded secrets in source code
+- Update outdated dependencies
 
-3. **Security Scan Failures**
-   - High/critical vulnerabilities: Run `npm audit fix`
-   - License issues: Review package licenses
-   - Outdated packages: Consider updating dependencies
+**Deployment Monitoring Issues:**
+- Ensure `AMPLIFY_APP_ID` is set in repository variables
+- Verify AWS credentials for CLI monitoring (optional)
+- Check Amplify Console for detailed build status
 
-### Getting Help
+**Legacy Deploy Workflow:**
+- Workflow is intentionally disabled
+- Remove after confirming Amplify deployments work
+- Use Amplify Console for deployment management
 
-1. Check workflow logs in GitHub Actions
-2. Review error messages and stack traces
-3. Verify configuration files and secrets
-4. Test commands locally before pushing
+### Health Check Failures
 
-## Customization
+If post-deployment health checks fail:
 
-### Adding Tests
+1. **Wait for DNS propagation** (can take up to 10 minutes)
+2. **Check Amplify build status** in AWS Console
+3. **Verify custom domain configuration** if using one
+4. **Test endpoints manually** to confirm functionality
 
-When you add tests to your project, update the test job in [`ci.yml`](.github/workflows/ci.yml):
+## 📚 Additional Resources
 
-```yaml
-- name: Run tests
-  run: npm test  # Replace the echo command with this
-```
+### AWS Amplify
+- [AWS Amplify Documentation](https://docs.amplify.aws/javascript/)
+- [Amplify CLI Guide](https://docs.amplify.aws/cli/)
+- [Next.js on Amplify](https://docs.amplify.aws/javascript/guides/nextjs/)
 
-### Modifying Security Rules
+### GitHub Actions
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Workflow Syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
 
-Adjust security thresholds in [`security.yml`](.github/workflows/security.yml):
+### Migration Resources
+- [Migration Plan](../migration-plan.md) - Detailed migration strategy
+- [Post-Migration Checklist](../post-migration-checklist.md) - Verification steps
+- [Deployment Guide](../deployment-guide.md) - New deployment instructions
 
-- Change audit level: `--audit-level=high`
-- Modify license restrictions
-- Add custom security checks
+## 🏷️ Workflow Status Badges
 
-### Environment Configuration
-
-Customize deployment environments:
-
-- Add new stages in [`deploy.yml`](.github/workflows/deploy.yml)
-- Configure different AWS regions
-- Add environment-specific variables
-
-## Best Practices
-
-1. **Branch Protection**: Enable branch protection rules for `main`
-2. **Required Checks**: Make CI workflow required for merges
-3. **Security Monitoring**: Review security scan results regularly
-4. **Dependency Updates**: Keep dependencies updated
-5. **Environment Isolation**: Use different AWS accounts for staging/production
-
-## Workflow Status Badges
-
-Add these badges to your README to show workflow status:
+Add these badges to your main README to show workflow status:
 
 ```markdown
-![CI](https://github.com/your-username/johnson-family-superbowl-enhanced/actions/workflows/ci.yml/badge.svg)
-![Deploy](https://github.com/your-username/johnson-family-superbowl-enhanced/actions/workflows/deploy.yml/badge.svg)
-![Security](https://github.com/your-username/johnson-family-superbowl-enhanced/actions/workflows/security.yml/badge.svg)
+![CI Pipeline](https://github.com/your-username/johnson-family-superbowl-enhanced/actions/workflows/ci.yml/badge.svg)
+![Amplify Monitor](https://github.com/your-username/johnson-family-superbowl-enhanced/actions/workflows/amplify-deploy.yml/badge.svg)
+![Security Scan](https://github.com/your-username/johnson-family-superbowl-enhanced/actions/workflows/security.yml/badge.svg)
+```
+
+## 🎯 Best Practices for Amplify
+
+### Development Workflow
+1. **Feature Development**: Work on feature branches
+2. **Testing**: Push to `develop` for staging deployment
+3. **Production**: Merge to `main` only after staging validation
+4. **Monitoring**: Use GitHub Actions and Amplify Console for oversight
+
+### Security
+1. **Environment Variables**: Configure in Amplify Console, not in code
+2. **Branch Protection**: Protect `main` branch with required status checks
+3. **Regular Scanning**: Monitor security scan results
+4. **Dependency Updates**: Keep dependencies current
+
+### Performance
+1. **Build Caching**: Leverages Node modules and Next.js cache
+2. **CDN**: Amplify provides built-in CloudFront distribution
+3. **Environment Optimization**: Different configurations for staging/production
+
+---
+
+**Migration Complete**: This pipeline is optimized for AWS Amplify deployment. The legacy SST deployment system has been replaced with Amplify's automatic Git-based deployments.

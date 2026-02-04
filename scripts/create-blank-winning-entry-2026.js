@@ -159,20 +159,17 @@ function generateBlankWinningEntry() {
         if (question.options) {
             // For questions with options, use the first option
             entry[index] = {
-                ...question,
-                response: question.options[0]
+                ...question
             };
         } else if (question.config?.placeholder === "M:SS") {
             // For time-based questions, use a default time
             entry[index] = {
-                ...question,
-                response: "2:00"
+                ...question
             };
         } else {
             // For text questions, use blank
             entry[index] = {
-                ...question,
-                response: ""
+                ...question
             };
         }
     });
