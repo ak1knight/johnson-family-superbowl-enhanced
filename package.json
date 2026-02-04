@@ -11,7 +11,9 @@
     "start": "next start",
     "type-check": "tsc --noEmit",
     "amplify:setup": "echo 'Visit AWS Amplify Console to connect this repository'",
-    "amplify:preview": "echo 'Deploy via Git push - Amplify will auto-build'"
+    "amplify:preview": "echo 'Deploy via Git push - Amplify will auto-build'",
+    "create-blank-winning-entry": "node scripts/create-blank-winning-entry-2026.js",
+    "create-blank-winning-entry:json": "node scripts/create-blank-winning-entry-2026.js --json-only"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.734.0",

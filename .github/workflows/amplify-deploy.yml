@@ -1,0 +1,189 @@
+name: Amplify Deployment Monitor
+
+on:
+  push:
+    branches:
+      - main
+      - stage
+  workflow_dispatch:
+    inputs:
+      check_deployment:
+        description: 'Check current deployment status'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  pre-deployment-validation:
+    name: Pre-Deployment Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Validate Amplify configuration
+        run: |
+          echo "Validating amplify.yml configuration..."
+          if [ ! -f "amplify.yml" ]; then
+            echo "❌ amplify.yml not found"
+            exit 1
+          fi
+          
+          echo "✅ Amplify configuration found"
+          echo "Configuration:"
+          cat amplify.yml
+          
+      - name: Run linting
+        run: npm run lint:check
+        
+      - name: Run type checking
+        run: npm run type-check
+        
+      - name: Test build (Amplify simulation)
+        run: |
+          echo "Testing build process that Amplify will run..."
+          npm run build
+          
+          # Verify build output
+          if [ ! -d ".next" ]; then
+            echo "❌ Build failed - no .next directory"
+            exit 1
+          fi
+          
+          if [ ! -f ".next/BUILD_ID" ]; then
+            echo "❌ Build failed - no BUILD_ID"
+            exit 1
+          fi
+          
+          echo "✅ Build validation successful"
+
+  monitor-amplify-deployment:
+    name: Monitor Amplify Deployment
+    runs-on: ubuntu-latest
+    needs: pre-deployment-validation
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage'
+    
+    steps:
+      - name: Determine environment
+        id: environment
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+            echo "branch=main" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+            echo "branch=stage" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Configure AWS credentials (optional)
+        id: aws-config
+        continue-on-error: true
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION || 'us-west-1' }}
+          
+      - name: Monitor Amplify build status
+        if: steps.aws-config.outcome == 'success'
+        run: |
+          echo "Monitoring Amplify deployment for ${{ steps.environment.outputs.environment }} environment..."
+          echo "Branch: ${{ steps.environment.outputs.branch }}"
+          
+          # Note: This requires AMPLIFY_APP_ID to be set in repository variables
+          APP_ID="${{ vars.AMPLIFY_APP_ID }}"
+          
+          if [ -z "$APP_ID" ]; then
+            echo "⚠️  AMPLIFY_APP_ID not configured in repository variables"
+            echo "Skipping automated monitoring - check Amplify console manually"
+            exit 0
+          fi
+          
+          echo "Amplify App ID: $APP_ID"
+          
+          # Wait a bit for Amplify to pick up the push
+          echo "Waiting for Amplify to detect push and start build..."
+          sleep 30
+          
+          # Check for recent builds
+          aws amplify list-jobs \
+            --app-id $APP_ID \
+            --branch-name ${{ steps.environment.outputs.branch }} \
+            --max-results 5 \
+            --query 'jobSummaries[0:2].{Status:status,StartTime:startTime,EndTime:endTime,JobId:jobId}' \
+            --output table || echo "Could not fetch build status"
+            
+      - name: Post-deployment health check
+        run: |
+          echo "Waiting for deployment to be available..."
+          sleep 60
+          
+          # Try to determine the deployment URL
+          if [ "${{ steps.environment.outputs.environment }}" = "production" ]; then
+            # Try common production URLs
+            URLS=("https://johnsonfamilysuperbowl.com" "https://main.amplifyapp.com")
+          else
+            # Try common staging URLs
+            URLS=("https://stage.amplifyapp.com")
+          fi
+          
+          echo "Testing deployment accessibility..."
+          
+          for url in "${URLS[@]}"; do
+            echo "Testing: $url"
+            if curl -f -s --max-time 10 "$url" >/dev/null 2>&1; then
+              echo "✅ Application accessible at $url"
+              echo "deployment-url=$url" >> $GITHUB_OUTPUT
+              break
+            else
+              echo "⚠️  Could not reach $url"
+            fi
+          done
+          
+  deployment-summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-validation, monitor-amplify-deployment]
+    if: always()
+    
+    steps:
+      - name: Create deployment summary
+        run: |
+          echo "# Amplify Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.ref == 'refs/heads/main' && 'Production' || 'Staging' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.pre-deployment-validation.result }}" = "success" ]; then
+            echo "✅ **Pre-deployment validation:** Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Pre-deployment validation:** Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ needs.monitor-amplify-deployment.result }}" = "success" ]; then
+            echo "✅ **Deployment monitoring:** Completed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️  **Deployment monitoring:** Check Amplify console for details" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Check deployment status:** [AWS Amplify Console](https://console.aws.amazon.com/amplify/)" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "🌐 **Production URL:** https://johnsonfamilysuperbowl.com" >> $GITHUB_STEP_SUMMARY
+          fi

@@ -5,9 +5,9 @@ on:
     # Run security scan daily at 2 AM UTC
     - cron: '0 2 * * *'
   push:
-    branches: [main]
+    branches: [main, stage]
   pull_request:
-    branches: [main]
+    branches: [main, stage]
   workflow_dispatch:
 
 jobs:
@@ -186,3 +186,142 @@ jobs:
         with:
           fail-on-severity: moderate
           allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, LGPL-2.0-only, LGPL-2.1-only, LGPL-3.0-only, LGPL-3.0-or-later, MPL-2.0, LicenseRef-scancode-alliance-open-media-patent-1.0
+
+  amplify-security-check:
+    name: Amplify Security Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Check for sensitive files in repository
+        run: |
+          echo "Checking for sensitive files that should not be in the repository..."
+          
+          # Check for environment files
+          if find . -name "*.env" -not -path "./.env.example" -not -path "./node_modules/*" | head -1 | grep -q .; then
+            echo "❌ Found .env files that should not be committed:"
+            find . -name "*.env" -not -path "./.env.example" -not -path "./node_modules/*"
+            exit 1
+          fi
+          
+          # Check for AWS credential files
+          if find . -name "credentials" -not -path "./node_modules/*" | head -1 | grep -q .; then
+            echo "❌ Found AWS credential files:"
+            find . -name "credentials" -not -path "./node_modules/*"
+            exit 1
+          fi
+          
+          # Check for private keys
+          if find . -name "*.pem" -o -name "*.key" -o -name "*_rsa" | grep -v node_modules | head -1 | grep -q .; then
+            echo "❌ Found potential private key files:"
+            find . -name "*.pem" -o -name "*.key" -o -name "*_rsa" | grep -v node_modules
+            exit 1
+          fi
+          
+          echo "✅ No sensitive files found in repository"
+          
+      - name: Validate Amplify configuration security
+        run: |
+          echo "Checking Amplify configuration security..."
+          
+          # Check amplify.yml exists and validate structure
+          if [ ! -f "amplify.yml" ]; then
+            echo "❌ amplify.yml not found"
+            exit 1
+          fi
+          
+          echo "✅ amplify.yml found"
+          
+          # Check for hardcoded secrets in amplify.yml
+          if grep -i -E "(password|secret|key|token)" amplify.yml; then
+            echo "⚠️  Potential hardcoded secrets found in amplify.yml"
+            echo "Please ensure no secrets are hardcoded in the configuration"
+          else
+            echo "✅ No obvious hardcoded secrets in amplify.yml"
+          fi
+          
+          # Validate Node.js version consistency
+          AMPLIFY_NODE_VERSION=$(grep -A 10 "preBuild" amplify.yml | grep -o "nvm use [0-9]*" | grep -o "[0-9]*" || echo "")
+          PACKAGE_NODE_VERSION=$(grep -o '"node":\s*"[^"]*"' package.json | grep -o '[0-9]*' || echo "")
+          
+          if [ ! -z "$AMPLIFY_NODE_VERSION" ] && [ ! -z "$PACKAGE_NODE_VERSION" ]; then
+            if [ "$AMPLIFY_NODE_VERSION" != "$PACKAGE_NODE_VERSION" ]; then
+              echo "⚠️  Node.js version mismatch between amplify.yml ($AMPLIFY_NODE_VERSION) and package.json ($PACKAGE_NODE_VERSION)"
+            else
+              echo "✅ Node.js versions consistent"
+            fi
+          fi
+          
+      - name: Check for SST remnants (security cleanup)
+        run: |
+          echo "Checking for SST-related security configurations that should be removed..."
+          
+          # Check for SST configuration files that might contain sensitive data
+          SST_FILES=("sst.config.ts" "sst-env.d.ts" ".sst/" "stacks/")
+          FOUND_SST=false
+          
+          for file in "${SST_FILES[@]}"; do
+            if [ -e "$file" ]; then
+              echo "⚠️  Found SST-related file: $file"
+              echo "    Consider removing after migration is complete"
+              FOUND_SST=true
+            fi
+          done
+          
+          if [ "$FOUND_SST" = false ]; then
+            echo "✅ No SST remnants found"
+          fi
+          
+          # Check for SST environment variables in documentation
+          if grep -r -i "SST_" . --exclude-dir=node_modules --exclude-dir=.git || true; then
+            echo "⚠️  Found SST environment variable references"
+            echo "    Update documentation to reflect Amplify environment variables"
+          fi
+          
+      - name: AWS security best practices check
+        run: |
+          echo "Checking AWS security best practices for Amplify..."
+          
+          # Check for hardcoded AWS regions
+          if grep -r -E "(us-east-1|us-west-1|us-west-2|eu-west-1)" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" | grep -v node_modules; then
+            echo "⚠️  Found hardcoded AWS regions in source code"
+            echo "    Consider using environment variables for region configuration"
+          else
+            echo "✅ No hardcoded AWS regions found in source code"
+          fi
+          
+          # Check DynamoDB client configuration for security best practices
+          if [ -f "src/data/database-service.ts" ]; then
+            echo "Checking DynamoDB configuration security..."
+            
+            if grep -q "accessKeyId\|secretAccessKey" src/data/database-service.ts; then
+              echo "❌ Found hardcoded AWS credentials in database service"
+              exit 1
+            else
+              echo "✅ No hardcoded credentials in database service"
+            fi
+            
+            if grep -q "region.*process\.env\|region.*env\." src/data/database-service.ts; then
+              echo "✅ Region configuration uses environment variables"
+            else
+              echo "⚠️  Region configuration should use environment variables"
+            fi
+          fi
+          
+      - name: Create security summary
+        run: |
+          echo "# Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** \`${{ github.repository }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Amplify Security Checks" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Sensitive files check" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Amplify configuration validation" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ SST remnants check" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ AWS security best practices" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔒 **Security Status:** All Amplify-specific security checks passed" >> $GITHUB_STEP_SUMMARY
