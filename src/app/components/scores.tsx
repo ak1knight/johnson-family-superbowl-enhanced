@@ -7,7 +7,15 @@ import { usePerformanceMonitor, memoizeWithLRU } from "../../utils/performance"
 
 // Memoized helper function to parse score input with validation
 const parseScore = memoizeWithLRU((value: string): number | undefined => {
-    const parsed = parseInt(value);
+    // Handle empty string explicitly
+    if (value === '') {
+        return undefined;
+    }
+    const parsed = parseInt(value, 10);
+    // Explicitly check for 0 to ensure it's preserved
+    if (parsed === 0) {
+        return 0;
+    }
     return isNaN(parsed) ? undefined : Math.max(0, Math.min(999, parsed));
 }, 100);
 
@@ -71,7 +79,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                     <div key={j} className="w-1/4">
                         <input
                             type="number"
-                            value={formStore.team1Scores[j] || ''}
+                            value={formStore.team1Scores[j] ?? ''}
                             className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
                             onChange={(e) => handleScoreChange(TEAM_INDEX.HOME, j, e.target.value)}
                         />
@@ -86,7 +94,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                     <div key={j} className="w-1/4">
                         <input
                             type="number"
-                            value={formStore.team2Scores[j] || ''}
+                            value={formStore.team2Scores[j] ?? ''}
                             className="input input-bordered w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
                             onChange={(e) => handleScoreChange(TEAM_INDEX.AWAY, j, e.target.value)}
                         />
@@ -102,7 +110,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                         {j !== QUARTERS.FINAL && <>
                             <input
                                 type="number"
-                                value={formStore.tiebreakers[j] || ''}
+                                value={formStore.tiebreakers[j] ?? ''}
                                 className="input input-bordered input-sm w-full max-w-xs bg-base-200 focus:bg-primary focus:text-primary-content"
                                 onChange={(e) => handleTiebreakerChange(j, e.target.value)}
                             />
@@ -130,7 +138,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                             </h5>
                             <input
                                 type="number"
-                                value={formStore.team1Scores[j] || ''}
+                                value={formStore.team1Scores[j] ?? ''}
                                 className="input input-bordered w-20 bg-base-200 focus:bg-primary focus:text-primary-content"
                                 onChange={(e) => handleScoreChange(TEAM_INDEX.HOME, j, e.target.value)}
                             />
@@ -144,7 +152,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                             </h5>
                             <input
                                 type="number"
-                                value={formStore.team2Scores[j] || ''}
+                                value={formStore.team2Scores[j] ?? ''}
                                 className="input input-bordered w-20 bg-base-200 focus:bg-primary focus:text-primary-content"
                                 onChange={(e) => handleScoreChange(TEAM_INDEX.AWAY, j, e.target.value)}
                             />
@@ -157,7 +165,7 @@ const Scores = observer(React.forwardRef<HTMLDivElement>(function Scores() {
                                     <span className="text-sm font-medium">Tiebreaker</span>
                                     <input
                                         type="number"
-                                        value={formStore.tiebreakers[j] || ''}
+                                        value={formStore.tiebreakers[j] ?? ''}
                                         className="input input-bordered input-sm w-20 bg-base-200 focus:bg-primary focus:text-primary-content"
                                         onChange={(e) => handleTiebreakerChange(j, e.target.value)}
                                     />

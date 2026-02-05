@@ -8,7 +8,7 @@ import EnhancedPropBetTable from '../components/EnhancedPropBetTable';
 type ViewType = 'scores' | 'props' | 'combined';
 
 const CompetitionDashboard = () => {
-    const [year, setYear] = useState(2025);
+    const [year, setYear] = useState(2026);
     const [activeView, setActiveView] = useState<ViewType>('scores');
     const [totalEntries, setTotalEntries] = useState<number>(0);
     

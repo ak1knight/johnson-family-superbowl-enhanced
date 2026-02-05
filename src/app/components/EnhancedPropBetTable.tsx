@@ -35,7 +35,7 @@ const EnhancedPropBetTable = ({ year, onEntriesLoad }: EnhancedPropBetTableProps
                 ]);
 
                 setEntries(entriesData);
-                setWinningEntry(winningEntryData);
+                setWinningEntry({...winningEntryData, yearKey: parseInt(winningEntryData.id) + 2019});
                 
                 if (onEntriesLoad && entriesData) {
                     onEntriesLoad(entriesData.length);
@@ -55,6 +55,9 @@ const EnhancedPropBetTable = ({ year, onEntriesLoad }: EnhancedPropBetTableProps
     }, [year]);
 
     const sortedEntries = useMemo(() => {
+        console.log('Calculating sorted entries...');
+        console.log('Entries:', entries);
+        console.log('Winning Entry:', winningEntry);
         if (!entries || !winningEntry || winningEntry.yearKey !== year) return [];
 
         const entriesWithScores = entries.map(entry => {
