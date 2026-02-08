@@ -3,6 +3,20 @@ import { useRouter } from "next/navigation";
 import Card from "./card";
 import { Question, periodNames, teams, TeamName } from "../../data/formdata";
 
+// Helper function to parse score input with proper 0 handling
+const parseScore = (value: string): number | undefined => {
+    // Handle empty string explicitly
+    if (value === '') {
+        return undefined;
+    }
+    const parsed = parseInt(value, 10);
+    // Explicitly check for 0 to ensure it's preserved
+    if (parsed === 0) {
+        return 0;
+    }
+    return isNaN(parsed) ? undefined : Math.max(0, Math.min(999, parsed));
+};
+
 type GamePhase = 'pre-game' | 'q1' | 'q2' | 'halftime' | 'q3' | 'q4' | 'post-game';
 
 type QuarterScore = {
@@ -242,7 +256,8 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
         }
     };
 
-    const updateScore = (quarter: keyof LiveWinningEntry, team: TeamName, score: number) => {
+    const updateScore = (quarter: keyof LiveWinningEntry, team: TeamName, value: string) => {
+        const score = parseScore(value);
         setWinningEntry(prev => ({
             ...prev,
             [quarter]: {
@@ -252,17 +267,19 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
         }));
     };
 
-    const updateTiebreaker = (quarter: keyof LiveWinningEntry, value: number) => {
+    const updateTiebreaker = (quarter: keyof LiveWinningEntry, value: string) => {
+        const tiebreakerValue = parseScore(value);
         setWinningEntry(prev => ({
             ...prev,
             [quarter]: {
                 ...prev[quarter] as any,
-                tiebreaker: value
+                tiebreaker: tiebreakerValue
             }
         }));
     };
 
-    const updateYards = (team: TeamName, yards: number) => {
+    const updateYards = (team: TeamName, value: string) => {
+        const yards = parseScore(value);
         setWinningEntry(prev => ({
             ...prev,
             [team]: { yards }
@@ -313,22 +330,119 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
         return sections;
     };
 
-    const renderGamePhaseSelector = () => (
-        <Card title="Game Phase">
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-                {(['pre-game', 'q1', 'q2', 'halftime', 'q3', 'q4', 'post-game'] as GamePhase[]).map(phase => (
-                    <button
-                        key={phase}
-                        type="button"
-                        className={`btn h-12 text-xs sm:text-sm ${gamePhase === phase ? 'btn-primary' : 'btn-outline'}`}
-                        onClick={() => setGamePhase(phase)}
-                    >
-                        {phase.replace('-', ' ').toUpperCase()}
-                    </button>
-                ))}
+    const renderGamePhaseSelector = () => {
+        const phases: { phase: GamePhase; label: string; icon: string }[] = [
+            { phase: 'pre-game', label: 'Pre-Game', icon: '🏟️' },
+            { phase: 'q1', label: 'Quarter 1', icon: '1️⃣' },
+            { phase: 'q2', label: 'Quarter 2', icon: '2️⃣' },
+            { phase: 'halftime', label: 'Halftime', icon: '🎤' },
+            { phase: 'q3', label: 'Quarter 3', icon: '3️⃣' },
+            { phase: 'q4', label: 'Quarter 4', icon: '4️⃣' },
+            { phase: 'post-game', label: 'Post-Game', icon: '🏆' },
+        ];
+
+        return (
+            <div className="sticky top-4 z-40 bg-base-100/95 backdrop-blur-sm rounded-2xl shadow-lg border border-base-300 p-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-base-content">Game Phase</h3>
+                    <div className="text-sm text-base-content/70">
+                        Live Controls
+                    </div>
+                </div>
+
+                {/* Current Phase Indicator */}
+                <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                    <div className="flex items-center gap-3">
+                        <span className="text-2xl">
+                            {phases.find(p => p.phase === gamePhase)?.icon}
+                        </span>
+                        <div>
+                            <div className="font-medium text-primary">
+                                {phases.find(p => p.phase === gamePhase)?.label}
+                            </div>
+                            <div className="text-xs text-primary/70">
+                                Currently Active
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Phase List */}
+                <div className="space-y-2">
+                    {phases.map((phaseData, index) => {
+                        const isActive = gamePhase === phaseData.phase;
+                        const isPast = phases.findIndex(p => p.phase === gamePhase) > index;
+                        
+                        return (
+                            <button
+                                key={phaseData.phase}
+                                type="button"
+                                className={`w-full flex items-center gap-3 p-3 rounded-lg transition-all duration-200 text-left ${
+                                    isActive
+                                        ? 'bg-primary text-primary-content shadow-md'
+                                        : isPast
+                                        ? 'bg-success/20 text-success hover:bg-success/30'
+                                        : 'bg-base-200 text-base-content/70 hover:bg-base-300'
+                                }`}
+                                onClick={() => setGamePhase(phaseData.phase)}
+                            >
+                                {/* Phase Icon */}
+                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+                                    isActive
+                                        ? 'bg-primary-content/20 text-primary-content'
+                                        : isPast
+                                        ? 'bg-success text-success-content'
+                                        : 'bg-base-300 text-base-content/60'
+                                }`}>
+                                    {isPast && !isActive ? (
+                                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                    ) : (
+                                        <span className="text-sm">{phaseData.icon}</span>
+                                    )}
+                                </div>
+
+                                {/* Phase Name */}
+                                <span className="text-sm font-medium flex-1">
+                                    {phaseData.label}
+                                </span>
+
+                                {/* Status Indicator */}
+                                {isActive && (
+                                    <div className="ml-auto">
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-content/20 text-primary-content">
+                                            Active
+                                        </span>
+                                    </div>
+                                )}
+                                {isPast && !isActive && (
+                                    <div className="ml-auto">
+                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-success/20 text-success">
+                                            Complete
+                                        </span>
+                                    </div>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Game Status */}
+                <div className="mt-4 pt-4 border-t border-base-300">
+                    <div className="flex items-center gap-2 p-3 bg-info/10 rounded-lg border border-info/20">
+                        <svg className="w-5 h-5 text-info" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm font-medium text-info">
+                            Sections unlock as you progress through game phases
+                        </span>
+                    </div>
+                </div>
             </div>
-        </Card>
-    );
+        );
+    };
 
     const renderPreGameSection = () => {
         const preGameQuestions = questions.filter(q => q.gamePhase === 'pre-game');
@@ -475,8 +589,8 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
                                 type="number"
                                 className="input input-bordered w-full h-12 text-lg"
                                 placeholder="0"
-                                value={quarterData?.[team.name] || ''}
-                                onChange={(e) => updateScore(quarter, team.name, parseInt(e.target.value) || 0)}
+                                value={quarterData?.[team.name] ?? ''}
+                                onChange={(e) => updateScore(quarter, team.name, e.target.value)}
                             />
                         </div>
                     ))}
@@ -488,8 +602,8 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
                             type="number"
                             className="input input-bordered w-full h-12 text-lg"
                             placeholder="0"
-                            value={quarterData?.tiebreaker || ''}
-                            onChange={(e) => updateTiebreaker(quarter, parseInt(e.target.value) || 0)}
+                            value={quarterData?.tiebreaker ?? ''}
+                            onChange={(e) => updateTiebreaker(quarter, e.target.value)}
                         />
                     </div>
                 </div>
@@ -513,8 +627,8 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
                                     type="number"
                                     className="input input-bordered w-full h-12 text-lg"
                                     placeholder="0"
-                                    value={winningEntry.final?.[team.name as keyof typeof winningEntry.final] || ''}
-                                    onChange={(e) => updateScore('final', team.name, parseInt(e.target.value) || 0)}
+                                    value={winningEntry.final?.[team.name as keyof typeof winningEntry.final] ?? ''}
+                                    onChange={(e) => updateScore('final', team.name, e.target.value)}
                                 />
                             </div>
                         ))}
@@ -526,8 +640,8 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
                                 type="number"
                                 className="input input-bordered w-full h-12 text-lg"
                                 placeholder="0"
-                                value={winningEntry.final?.tiebreaker || ''}
-                                onChange={(e) => updateTiebreaker('final', parseInt(e.target.value) || 0)}
+                                value={winningEntry.final?.tiebreaker ?? ''}
+                                onChange={(e) => updateTiebreaker('final', e.target.value)}
                             />
                         </div>
                     </div>
@@ -546,8 +660,8 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
                                     type="number"
                                     className="input input-bordered w-full h-12 text-lg"
                                     placeholder="0"
-                                    value={winningEntry[team.name]?.yards || ''}
-                                    onChange={(e) => updateYards(team.name, parseInt(e.target.value) || 0)}
+                                    value={winningEntry[team.name]?.yards ?? ''}
+                                    onChange={(e) => updateYards(team.name, e.target.value)}
                                 />
                             </div>
                         ))}
@@ -558,38 +672,43 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
     );
 
     const renderAutoSaveStatus = () => (
-        <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-                <input
-                    type="checkbox"
-                    className="checkbox checkbox-sm"
-                    checked={autoSaveEnabled}
-                    onChange={(e) => setAutoSaveEnabled(e.target.checked)}
-                />
-                <span className="text-sm">Auto-save enabled</span>
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div className="flex items-center gap-3">
+                <label className="label cursor-pointer gap-2 p-0">
+                    <input
+                        type="checkbox"
+                        className="checkbox checkbox-sm"
+                        checked={autoSaveEnabled}
+                        onChange={(e) => setAutoSaveEnabled(e.target.checked)}
+                    />
+                    <span className="label-text text-sm font-medium">Auto-save every 5 seconds</span>
+                </label>
+                
+                {saving ? (
+                    <div className="flex items-center gap-2 text-warning">
+                        <span className="loading loading-spinner loading-xs"></span>
+                        <span className="text-sm font-medium">Saving...</span>
+                    </div>
+                ) : lastSaved ? (
+                    <div className="flex items-center gap-2 text-success">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm">Last saved: {lastSaved.toLocaleTimeString()}</span>
+                    </div>
+                ) : (
+                    <div className="text-sm text-base-content/60">No changes to save yet</div>
+                )}
             </div>
             
-            <div className="flex items-center gap-2">
-                {saving ? (
-                    <span className="text-sm text-gray-500 flex items-center gap-1">
-                        <span className="loading loading-spinner loading-xs"></span>
-                        Saving...
-                    </span>
-                ) : lastSaved ? (
-                    <span className="text-sm text-gray-500">
-                        Last saved: {lastSaved.toLocaleTimeString()}
-                    </span>
-                ) : null}
-                
-                <button
-                    type="button"
-                    className="btn btn-sm btn-primary"
-                    onClick={() => saveWinningEntry(true)}
-                    disabled={saving}
-                >
-                    Save Now
-                </button>
-            </div>
+            <button
+                type="button"
+                className="btn btn-sm btn-outline"
+                onClick={() => saveWinningEntry(true)}
+                disabled={saving}
+            >
+                {saving ? 'Saving...' : 'Save Now'}
+            </button>
         </div>
     );
 
@@ -633,50 +752,85 @@ const LiveWinningEntryForm: React.FC<LiveWinningEntryFormProps> = ({ year, quest
     );
 
     return (
-        <div className="max-w-6xl mx-auto p-2 sm:p-4">
-            <div className="mb-4 sm:mb-6">
-                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Live Winning Entry - Super Bowl {year}</h1>
-                <p className="text-sm sm:text-base text-gray-600">
-                    Enter actual results as the game progresses. Only available sections will be shown based on the current game phase.
-                </p>
-            </div>
-            <div className="space-y-2 mt-2">
-                {renderAutoSaveStatus()}
-                {renderEntrySelector()}
-                {renderGamePhaseSelector()}
-            </div>
-
-            <div className="space-y-2 mt-2">
-                {getAvailableSections().includes('pre-game') && renderPreGameSection()}
-                {getAvailableSections().includes('quarter1') && renderQuarterSection('quarter1', 'Quarter 1')}
-                {getAvailableSections().includes('q1-questions') && renderQuestionsByPhase('q1')}
-                {getAvailableSections().includes('quarter2') && renderQuarterSection('quarter2', 'Quarter 2')}
-                {getAvailableSections().includes('q2-questions') && renderQuestionsByPhase('q2')}
-                {getAvailableSections().includes('halftime-questions') && renderQuestionsByPhase('halftime')}
-                {getAvailableSections().includes('quarter3') && renderQuarterSection('quarter3', 'Quarter 3')}
-                {getAvailableSections().includes('q3-questions') && renderQuestionsByPhase('q3')}
-                {getAvailableSections().includes('quarter4') && renderQuarterSection('final', 'Quarter 4')}
-                {getAvailableSections().includes('q4-questions') && renderQuestionsByPhase('q4')}
-                {getAvailableSections().includes('final-stats') && renderFinalSection()}
-                {getAvailableSections().includes('post-game-questions') && renderQuestionsByPhase('post-game')}
+        <div className="max-w-7xl mx-auto">
+            {/* Top controls section */}
+            <div className="bg-base-100 rounded-lg shadow-sm border border-base-300 p-4 mb-6">
+                <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                    <div className="flex-grow">
+                        <h2 className="text-xl font-semibold mb-1">Game Administration</h2>
+                        <p className="text-sm text-base-content/70">
+                            Monitor save status and manage entry templates
+                        </p>
+                    </div>
+                    {renderAutoSaveStatus()}
+                </div>
+                <div className="mt-4">
+                    {renderEntrySelector()}
+                </div>
             </div>
 
-            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-2 sm:gap-4">
-                <button
-                    type="button"
-                    className="btn btn-secondary w-full sm:w-auto order-2 sm:order-1"
-                    onClick={() => router.push("/big_board")}
-                >
-                    View Results
-                </button>
-                <button
-                    type="button"
-                    className="btn btn-primary w-full sm:w-auto order-1 sm:order-2"
-                    onClick={() => saveWinningEntry(true)}
-                    disabled={saving}
-                >
-                    {saving ? 'Saving...' : 'Save & Finish'}
-                </button>
+            {/* Main layout with sidebar */}
+            <div className="flex flex-col lg:flex-row gap-6">
+                {/* Sidebar - Game Phase Selector */}
+                <div className="lg:w-80 flex-shrink-0">
+                    {renderGamePhaseSelector()}
+                </div>
+
+                {/* Main Content Area */}
+                <div className="flex-1 min-w-0">
+                    {/* Main form sections */}
+                    <div className="space-y-6">
+                        {getAvailableSections().includes('pre-game') && renderPreGameSection()}
+                        {getAvailableSections().includes('quarter1') && renderQuarterSection('quarter1', 'Quarter 1')}
+                        {getAvailableSections().includes('q1-questions') && renderQuestionsByPhase('q1')}
+                        {getAvailableSections().includes('quarter2') && renderQuarterSection('quarter2', 'Quarter 2')}
+                        {getAvailableSections().includes('q2-questions') && renderQuestionsByPhase('q2')}
+                        {getAvailableSections().includes('halftime-questions') && renderQuestionsByPhase('halftime')}
+                        {getAvailableSections().includes('quarter3') && renderQuarterSection('quarter3', 'Quarter 3')}
+                        {getAvailableSections().includes('q3-questions') && renderQuestionsByPhase('q3')}
+                        {getAvailableSections().includes('quarter4') && renderQuarterSection('final', 'Quarter 4')}
+                        {getAvailableSections().includes('q4-questions') && renderQuestionsByPhase('q4')}
+                        {getAvailableSections().includes('final-stats') && renderFinalSection()}
+                        {getAvailableSections().includes('post-game-questions') && renderQuestionsByPhase('post-game')}
+                    </div>
+
+                    {/* Action buttons - sticky bottom bar */}
+                    <div className="mt-8 bg-base-100 border-t border-base-300 p-4 rounded-t-lg shadow-lg">
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                            <button
+                                type="button"
+                                className="btn btn-outline btn-lg w-full sm:w-auto"
+                                onClick={() => router.push("/big_board")}
+                            >
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                View Live Results
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-primary btn-lg w-full sm:w-auto"
+                                onClick={() => saveWinningEntry(true)}
+                                disabled={saving}
+                            >
+                                {saving ? (
+                                    <>
+                                        <span className="loading loading-spinner loading-sm mr-2"></span>
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Save Changes
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
